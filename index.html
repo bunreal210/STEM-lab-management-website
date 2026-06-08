@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống quản lý & Vận hành phòng STEM Laboratory BẮC ĐÔNG QUAN</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        stemBlue: { 50:'#f0f9ff',100:'#e0f2fe',200:'#bae6fd',500:'#0284c7',600:'#0369a1',700:'#075985',900:'#0c4a6e' },
+                        pvn: { 400:'#60a5fa',500:'#005BAC',600:'#004B91' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+<!-- TOP BAR -->
+<div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white text-xs py-2 px-4 text-center font-semibold flex items-center justify-center gap-2">
+    <i data-lucide="zap" class="w-4 h-4 text-yellow-300 fill-yellow-300 animate-pulse"></i>
+    Chương trình STEM INNOVATION PETROVIETNAM được tài trợ bởi Tập đoàn Công nghiệp – Năng lượng Quốc gia Việt Nam (PetroVietnam)
+</div>
+
+<!-- HEADER -->
+<header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[72px] flex items-center justify-between">
+        <!-- Logo -->
+        <div class="flex items-center gap-5 cursor-pointer" onclick="switchTab('trang-chu')">
+            <div class="flex items-center gap-3 border-r border-slate-300 pr-5">
+                <div class="w-14 h-14 bg-white rounded-2xl shadow-md border border-slate-200 p-1">
+                    <img src="assets/images/logo-bdq.jpg" alt="BDQ" class="w-full h-full object-contain">
+                </div>
+                <div class="w-14 h-14 bg-white rounded-2xl shadow-md border border-slate-200 p-1">
+                    <img src="assets/images/logo-pvn.png" alt="PVN" class="w-full h-full object-contain">
+                </div>
+            </div>
+            <div class="leading-tight">
+                <h1 class="font-black text-xl md:text-2xl text-stemBlue-900 tracking-tight">STEM LAB</h1>
+                <div class="text-sm font-bold text-slate-700 uppercase tracking-wide">THPT Bắc Đông Quan</div>
+                <div class="hidden md:block text-xs text-slate-500">Innovation • Robotics • AI • Engineering</div>
+            </div>
+        </div>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden xl:flex items-center gap-0.5">
+            <button onclick="switchTab('trang-chu')" id="tab-trang-chu-btn" class="px-3 py-2 rounded-lg text-sm font-medium transition-all text-stemBlue-600 bg-stemBlue-50">Trang chủ</button>
+            <button onclick="switchTab('co-so-vat-chat')" id="tab-co-so-vat-chat-btn" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-stemBlue-600 hover:bg-slate-50 transition-all">Kho Thiết bị</button>
+            <button onclick="switchTab('lich-hoc')" id="tab-lich-hoc-btn" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-stemBlue-600 hover:bg-slate-50 transition-all">Lịch hoạt động</button>
+            <button onclick="switchTab('kho-tai-lieu')" id="tab-kho-tai-lieu-btn" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-stemBlue-600 hover:bg-slate-50 transition-all">Thư viện số</button>
+            <button onclick="switchTab('truyen-thong')" id="tab-truyen-thong-btn" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-stemBlue-600 hover:bg-slate-50 transition-all">Tin tức</button>
+            <button onclick="switchTab('nhat-ky')" id="tab-nhat-ky-btn" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-stemBlue-600 hover:bg-slate-50 transition-all flex items-center gap-1">
+                <i data-lucide="notebook-pen" class="w-3.5 h-3.5"></i> Nhật ký Lab
+            </button>
+            <button id="tab-muon-tra-btn" onclick="switchTab('muon-tra')" class="hidden px-3 py-2 rounded-lg text-sm font-medium text-stemBlue-600 hover:bg-stemBlue-50 border border-stemBlue-200 bg-white transition-all">Đăng ký Mượn</button>
+            <button id="tab-bao-hong-btn" onclick="switchTab('bao-hong')" class="hidden px-3 py-2 rounded-lg text-sm font-medium text-amber-600 hover:bg-amber-50 border border-amber-200 bg-white transition-all flex items-center gap-1">
+                <i data-lucide="triangle-alert" class="w-3.5 h-3.5"></i> Báo hỏng
+            </button>
+        </nav>
+
+        <!-- Right Actions -->
+        <div class="flex items-center gap-2">
+            <div id="tg-status-indicator" class="hidden lg:flex items-center gap-2 text-xs font-bold text-slate-400">
+                <span class="w-2 h-2 rounded-full bg-slate-300"></span> Telegram: Chưa cấu hình
+            </div>
+            <button onclick="toggleDarkMode()" class="p-2 rounded-xl hover:bg-slate-100 text-slate-500 transition-all"><i data-lucide="moon" class="w-5 h-5"></i></button>
+            <button id="admin-panel-btn" onclick="switchTab('admin-panel')" class="hidden bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5">
+                <i data-lucide="settings" class="w-4 h-4"></i> Quản trị
+            </button>
+            <div id="auth-unlogged" class="flex items-center gap-2">
+                <button onclick="openAuthModal('login')" class="text-slate-600 hover:text-stemBlue-600 px-3 py-1.5 text-sm font-semibold">Đăng nhập</button>
+                <button onclick="openAuthModal('register')" class="bg-stemBlue-600 hover:bg-stemBlue-700 text-white px-4 py-1.5 rounded-lg text-sm font-semibold shadow-sm">Đăng ký</button>
+            </div>
+            <div id="auth-logged" class="hidden flex items-center gap-2">
+                <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 py-1 px-3 rounded-full">
+                    <div class="w-7 h-7 rounded-full bg-pvn-500 text-white font-bold flex items-center justify-center text-xs" id="user-avatar-char">U</div>
+                    <div class="hidden sm:block">
+                        <p class="text-xs font-bold text-slate-800 leading-tight truncate max-w-[100px]" id="user-display-name">User</p>
+                        <span class="text-[10px] font-semibold text-slate-400 uppercase" id="user-display-role">Học sinh</span>
+                    </div>
+                </div>
+                <button onclick="logout()" class="p-2 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-all" title="Đăng xuất">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <button onclick="toggleMobileMenu()" class="xl:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+                <i data-lucide="menu" class="w-6 h-6" id="menu-icon"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden xl:hidden border-t border-slate-100 bg-white px-4 py-3 space-y-1 shadow-inner">
+        <button onclick="switchTab('trang-chu');toggleMobileMenu()" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i data-lucide="home" class="w-4 h-4"></i> Trang chủ</button>
+        <button onclick="switchTab('co-so-vat-chat');toggleMobileMenu()" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i data-lucide="box" class="w-4 h-4"></i> Kho Thiết bị</button>
+        <button onclick="switchTab('lich-hoc');toggleMobileMenu()" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4"></i> Lịch hoạt động</button>
+        <button onclick="switchTab('kho-tai-lieu');toggleMobileMenu()" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i data-lucide="folder-open" class="w-4 h-4"></i> Thư viện số</button>
+        <button onclick="switchTab('truyen-thong');toggleMobileMenu()" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i data-lucide="newspaper" class="w-4 h-4"></i> Tin tức</button>
+        <button onclick="switchTab('nhat-ky');toggleMobileMenu()" class="w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 flex items-center gap-2"><i data-lucide="notebook-pen" class="w-4 h-4"></i> Nhật ký Lab</button>
+        <button id="mobile-muon-tra-btn" onclick="switchTab('muon-tra');toggleMobileMenu()" class="hidden w-full text-left px-4 py-2.5 rounded-lg text-sm font-bold text-stemBlue-600 bg-stemBlue-50 border border-stemBlue-100 flex items-center gap-2"><i data-lucide="arrow-left-right" class="w-4 h-4"></i> Đăng ký Mượn/Trả</button>
+        <button id="mobile-bao-hong-btn" onclick="switchTab('bao-hong');toggleMobileMenu()" class="hidden w-full text-left px-4 py-2.5 rounded-lg text-sm font-bold text-amber-600 bg-amber-50 border border-amber-100 flex items-center gap-2"><i data-lucide="triangle-alert" class="w-4 h-4"></i> Báo hỏng Thiết bị</button>
+    </div>
+</header>
+
+
+<!-- MAIN -->
+<main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+<!-- ====== TAB: TRANG CHỦ ====== -->
+<div id="tab-trang-chu">
+    <div class="relative overflow-hidden rounded-3xl shadow-2xl min-h-[560px]">
+        <img src="https://images.unsplash.com/photo-1532094349884-543bc11b234d" alt="STEM Lab" class="absolute inset-0 w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-blue-950/85 to-slate-900/80"></div>
+        <div class="relative z-10 px-8 py-20 max-w-6xl mx-auto text-center">
+            <!-- <div class="flex justify-center mb-8">
+                <div class="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl px-6 py-3 flex items-center gap-3">
+                    <img src="assets/images/logo-pvn.png" class="w-8 h-8 object-contain">
+                    <span class="text-sky-100 font-bold tracking-wider text-sm uppercase">Chương trình STEM PetroVietnam</span>
+                </div>
+            </div> -->
+            <h1 class="text-4xl md:text-7xl font-black text-white leading-tight">STEM LAB
+                <span class="block bg-gradient-to-r from-sky-300 via-cyan-200 to-emerald-300 bg-clip-text text-transparent">THPT BẮC ĐÔNG QUAN</span>
+            </h1>
+            <p class="mt-6 text-lg text-slate-200 max-w-2xl mx-auto">Không gian sáng tạo dành cho Robotics, AI, IoT, Lập trình và Nghiên cứu khoa học kỹ thuật.</p>
+            <div class="flex flex-wrap justify-center gap-3 mt-8">
+                <span class="px-4 py-2 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white text-sm">🤖 Robotics</span>
+                <span class="px-4 py-2 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white text-sm">💻 AI & Coding</span>
+                <span class="px-4 py-2 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white text-sm">🌐 IoT</span>
+                <span class="px-4 py-2 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white text-sm">🖨️ 3D Printing</span>
+            </div>
+            <div class="flex flex-col md:flex-row justify-center gap-4 mt-10">
+                <button onclick="switchTab('co-so-vat-chat')" class="px-8 py-4 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-2xl shadow-xl transition">Khám phá thiết bị</button>
+                <button onclick="switchTab('nhat-ky')" class="px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur text-white border border-white/20 rounded-2xl font-bold transition">Xem Nhật ký Lab</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center"><p class="text-3xl font-black text-stemBlue-600" id="stat-total-devices">0</p><p class="text-xs font-bold text-slate-500 mt-1 uppercase tracking-wider">Thiết bị</p></div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center"><p class="text-3xl font-black text-emerald-600" id="stat-upcoming-events">0</p><p class="text-xs font-bold text-slate-500 mt-1 uppercase tracking-wider">Sự kiện</p></div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center"><p class="text-3xl font-black text-amber-600" id="stat-total-videos">0</p><p class="text-xs font-bold text-slate-500 mt-1 uppercase tracking-wider">Tài liệu</p></div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm text-center"><p class="text-3xl font-black text-purple-600" id="stat-active-users">0</p><p class="text-xs font-bold text-slate-500 mt-1 uppercase tracking-wider">Học sinh</p></div>
+    </div>
+
+    <!-- Shortcut cards -->
+    <div class="grid md:grid-cols-3 gap-4 mt-6">
+        <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-5 text-white cursor-pointer hover:shadow-lg transition" onclick="switchTab('nhat-ky')">
+            <i data-lucide="notebook-pen" class="w-7 h-7 mb-3 opacity-80"></i>
+            <h3 class="font-extrabold text-base">Nhật Ký Hoạt Động</h3>
+            <p class="text-blue-100 text-xs mt-1">Ghi lại các buổi học, kiểm kê, sự kiện phòng Lab.</p>
+        </div>
+        <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-5 text-white cursor-pointer hover:shadow-lg transition" onclick="switchTab('bao-hong')">
+            <i data-lucide="triangle-alert" class="w-7 h-7 mb-3 opacity-80"></i>
+            <h3 class="font-extrabold text-base">Báo Hỏng Thiết Bị</h3>
+            <p class="text-amber-100 text-xs mt-1">Phát hiện lỗi? Báo ngay để Admin xử lý.</p>
+        </div>
+        <div class="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl p-5 text-white cursor-pointer hover:shadow-lg transition" onclick="switchTab('muon-tra')">
+            <i data-lucide="arrow-left-right" class="w-7 h-7 mb-3 opacity-80"></i>
+            <h3 class="font-extrabold text-base">Đăng Ký Mượn Đồ</h3>
+            <p class="text-emerald-100 text-xs mt-1">Mượn thiết bị về lớp thực hiện đề tài KHKT.</p>
+        </div>
+    </div>
+
+    <!-- Alert box -->
+    <div id="unauthorized-alert-box" class="mt-6 bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-4">
+        <div class="p-2.5 bg-amber-100 text-amber-600 rounded-xl shrink-0"><i data-lucide="lock" class="w-5 h-5"></i></div>
+        <div class="flex-1">
+            <h4 class="font-bold text-amber-900 text-sm">Đăng nhập để sử dụng đầy đủ tính năng</h4>
+            <p class="text-xs text-amber-700 mt-1">Tài khoản test: <strong>admin / admin123</strong> (Quản trị) | <strong>0987654321 / 123456</strong> (Học sinh)</p>
+        </div>
+        <button onclick="openAuthModal('login')" class="shrink-0 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm">Đăng nhập</button>
+    </div>
+</div>
+
+
+<!-- ====== TAB: KHO THIẾT BỊ ====== -->
+<section id="tab-co-so-vat-chat" class="space-y-6 hidden">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+        <div><h2 class="text-2xl font-extrabold text-slate-900">Kho Thiết Bị & Linh Kiện STEM</h2><p class="text-sm text-slate-500 mt-1">Tra cứu số lượng và đăng ký mượn thiết bị.</p></div>
+        <button id="add-device-btn" onclick="openDeviceModal()" class="hidden bg-stemBlue-600 hover:bg-stemBlue-700 text-white text-sm font-semibold py-2 px-4 rounded-xl shadow-sm transition-all flex items-center gap-1.5"><i data-lucide="plus-circle" class="w-4 h-4"></i> Thêm Linh Kiện</button>
+    </div>
+    <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4">
+        <div class="relative w-full md:flex-1"><i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i><input type="text" id="device-search-input" onkeyup="filterDevices()" placeholder="Tìm tên thiết bị, mã dụng cụ..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-stemBlue-500"></div>
+        <select id="device-category-filter" onchange="filterDevices()" class="w-full md:w-64 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stemBlue-500">
+            <option value="all">Tất cả danh mục</option>
+            <option value="Robotics">Khung gầm & Cơ khí</option>
+            <option value="Vi điều khiển">Mạch & Cảm biến</option>
+            <option value="In 3D">Thiết bị In 3D</option>
+            <option value="Đo lường">Dụng cụ Đo lường</option>
+        </select>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="device-container"></div>
+</section>
+
+
+<!-- ====== TAB: LỊCH HỌC ====== -->
+<section id="tab-lich-hoc" class="space-y-6 hidden">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+        <div><h2 class="text-2xl font-extrabold text-slate-900">Lịch Học & Hoạt Động CLB</h2><p class="text-sm text-slate-500 mt-1">Lịch tập huấn KHKT, sinh hoạt nội bộ và mở cửa Lab.</p></div>
+        <button id="add-schedule-btn" onclick="openScheduleModal()" class="hidden bg-stemBlue-600 hover:bg-stemBlue-700 text-white text-sm font-semibold py-2 px-4 rounded-xl shadow-sm flex items-center gap-1.5"><i data-lucide="plus" class="w-4 h-4"></i> Tạo Lịch Mới</button>
+    </div>
+    <div class="grid lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-4">
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2"><i data-lucide="calendar-days" class="text-stemBlue-600 w-5 h-5"></i>Sự kiện sắp tới</h3>
+            <div id="schedule-list-container" class="space-y-4"></div>
+        </div>
+        <div class="space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="text-md font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2"><i data-lucide="shield-alert" class="text-amber-500 w-5 h-5"></i>Nội quy Phòng STEM Lab</h3>
+                <ol class="text-sm text-slate-600 space-y-2 list-decimal pl-4 leading-relaxed">
+                    <li>Chỉ vào phòng khi có sự hướng dẫn của giáo viên phụ trách.</li>
+                    <li>Đăng ký thiết bị mượn trên hệ thống web trước.</li>
+                    <li>Bảo quản linh kiện cẩn thận, dùng đúng quy cách.</li>
+                    <li>Không mang linh kiện ra ngoài Lab khi chưa báo cáo.</li>
+                    <li>Thu dọn, vệ sinh bàn làm việc và để lại các thiết bị đúng vị trí sau buổi học.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ====== TAB: THƯ VIỆN ====== -->
+<section id="tab-kho-tai-lieu" class="space-y-6 hidden">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+        <div><h2 class="text-2xl font-extrabold text-slate-900">Thư Viện Kiến Thức Số</h2><p class="text-sm text-slate-500 mt-1">Slide bài giảng, code mẫu và hướng dẫn lắp ráp.</p></div>
+        <button id="add-material-btn" onclick="openMaterialModal()" class="hidden bg-stemBlue-600 hover:bg-stemBlue-700 text-white text-sm font-semibold py-2 px-4 rounded-xl shadow-sm flex items-center gap-1.5"><i data-lucide="upload" class="w-4 h-4"></i> Tải lên Tài liệu</button>
+    </div>
+    <div class="grid md:grid-cols-12 gap-8">
+        <div class="md:col-span-3">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3">Phân loại</h3>
+                <button onclick="filterMaterials('all')" id="mat-filter-all" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-stemBlue-700 bg-stemBlue-50">Tất cả tài liệu</button>
+                <button onclick="filterMaterials('video')" id="mat-filter-video" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Video Bài giảng</button>
+                <button onclick="filterMaterials('pdf')" id="mat-filter-pdf" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Sách & Giáo trình PDF</button>
+                <button onclick="filterMaterials('guide')" id="mat-filter-guide" class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50">Source Code & Hướng dẫn</button>
+            </div>
+        </div>
+        <div class="md:col-span-9"><div class="grid sm:grid-cols-2 gap-6" id="materials-container"></div></div>
+    </div>
+</section>
+
+
+<!-- ====== TAB: TIN TỨC ====== -->
+<section id="tab-truyen-thong" class="space-y-6 hidden">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+        <div><h2 class="text-2xl font-extrabold text-slate-900">Tin tức & Hoạt động CLB</h2><p class="text-sm text-slate-500 mt-1">Cập nhật hình ảnh dự án và bản tin KHKT.</p></div>
+        <button id="add-post-btn" onclick="openPostModal()" class="hidden bg-stemBlue-600 hover:bg-stemBlue-700 text-white text-sm font-semibold py-2 px-4 rounded-xl shadow-sm flex items-center gap-1.5"><i data-lucide="pen-tool" class="w-4 h-4"></i> Đăng bản tin</button>
+    </div>
+    <div class="grid lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-6" id="blog-container"></div>
+        <div class="space-y-6">
+            <div class="bg-gradient-to-br from-indigo-900 to-stemBlue-900 text-white p-6 rounded-2xl shadow-lg">
+                <h3 class="text-lg font-bold mb-3">Tìm kiếm nhân tài!</h3>
+                <p class="text-indigo-200 text-xs leading-relaxed mb-4">CLB KHKT thường xuyên tuyển thành viên đam mê Lập trình, Chế tạo và Thiết kế 3D.</p>
+                <a href="#" class="inline-flex items-center gap-2 bg-white text-indigo-900 font-bold text-xs px-4 py-2 rounded-lg shadow"><i data-lucide="facebook" class="w-4 h-4"></i> Fanpage CLB</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ====== TAB: NHẬT KÝ LAB (MỚI) ====== -->
+<section id="tab-nhat-ky" class="space-y-6 hidden">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+        <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+                <i data-lucide="notebook-pen" class="w-7 h-7 text-stemBlue-600"></i> Nhật Ký Hoạt Động Phòng Lab
+            </h2>
+            <p class="text-sm text-slate-500 mt-1">Lịch sử các buổi học, kiểm kê định kỳ, bảo trì và sự kiện của phòng STEM Lab.</p>
+        </div>
+        <button id="add-journal-btn" onclick="openJournalModal()"
+            class="hidden bg-stemBlue-600 hover:bg-stemBlue-700 text-white text-sm font-semibold py-2 px-4 rounded-xl shadow-sm flex items-center gap-1.5">
+            <i data-lucide="plus" class="w-4 h-4"></i> Ghi Nhật Ký Mới
+        </button>
+    </div>
+
+    <!-- Journal Stats -->
+    <div class="grid grid-cols-3 gap-4">
+        <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-center">
+            <p class="text-2xl font-black text-blue-700" id="jn-stat-total">0</p>
+            <p class="text-[10px] font-bold text-blue-500 uppercase tracking-wider mt-1">Tổng bản ghi</p>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-center">
+            <p class="text-2xl font-black text-emerald-700" id="jn-stat-month">0</p>
+            <p class="text-[10px] font-bold text-emerald-500 uppercase tracking-wider mt-1">Tháng này</p>
+        </div>
+        <div class="bg-purple-50 border border-purple-100 rounded-2xl p-4 text-center">
+            <p class="text-2xl font-black text-purple-700" id="jn-stat-participants">0</p>
+            <p class="text-[10px] font-bold text-purple-500 uppercase tracking-wider mt-1">Lượt tham gia</p>
+        </div>
+    </div>
+
+    <!-- Filter buttons -->
+    <div class="flex flex-wrap gap-2">
+        <button id="jf-all" onclick="filterJournal('all')" class="journal-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-stemBlue-600 text-white shadow">Tất cả</button>
+        <button id="jf-Buổi học" onclick="filterJournal('Buổi học')" class="journal-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200">📚 Buổi học</button>
+        <button id="jf-Kiểm kê" onclick="filterJournal('Kiểm kê')" class="journal-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200">📋 Kiểm kê</button>
+        <button id="jf-Bảo trì" onclick="filterJournal('Bảo trì')" class="journal-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200">🔧 Bảo trì</button>
+        <button id="jf-Sự kiện" onclick="filterJournal('Sự kiện')" class="journal-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200">🎯 Sự kiện</button>
+        <button id="jf-Khác" onclick="filterJournal('Khác')" class="journal-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200">📌 Khác</button>
+    </div>
+
+    <!-- Journal list -->
+    <div class="space-y-4" id="journal-container"></div>
+</section>
+
+
+<!-- ====== TAB: BÁO HỎNG (MỚI) ====== -->
+<section id="tab-bao-hong" class="space-y-6 hidden">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+        <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+                <i data-lucide="triangle-alert" class="w-7 h-7 text-amber-500"></i> Báo Hỏng / Lỗi Thiết Bị
+            </h2>
+            <p class="text-sm text-slate-500 mt-1">Phát hiện thiết bị bị lỗi? Gửi báo cáo ngay để Admin kiểm tra và xử lý kịp thời.</p>
+        </div>
+        <button onclick="openReportModal()"
+            class="bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold py-2 px-4 rounded-xl shadow-sm flex items-center gap-1.5">
+            <i data-lucide="send" class="w-4 h-4"></i> Gửi Báo Cáo Hỏng
+        </button>
+    </div>
+
+    <!-- How it works -->
+    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-4">
+        <div class="p-3 bg-amber-100 text-amber-600 rounded-xl shrink-0"><i data-lucide="info" class="w-5 h-5"></i></div>
+        <div>
+            <h4 class="font-bold text-amber-900 text-sm">Cách hoạt động</h4>
+            <p class="text-xs text-amber-700 mt-1 leading-relaxed">Sau khi bạn gửi báo cáo, Admin sẽ nhận thông báo qua Telegram ngay lập tức và tiến hành kiểm tra. Trạng thái xử lý sẽ được cập nhật trong bảng bên dưới.</p>
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-8">
+        <!-- Report form teaser -->
+        <div class="bg-white rounded-2xl border border-amber-200 p-6 shadow-sm space-y-4">
+            <h3 class="font-bold text-slate-900 flex items-center gap-2"><i data-lucide="clipboard-edit" class="w-5 h-5 text-amber-500"></i>Gửi Phiếu Báo Hỏng</h3>
+            <p class="text-sm text-slate-500">Nhấn nút bên dưới để mở form báo cáo. Vui lòng mô tả chi tiết triệu chứng lỗi để Admin có thể xử lý nhanh nhất.</p>
+            <button onclick="openReportModal()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2">
+                <i data-lucide="triangle-alert" class="w-4 h-4"></i> Mở Form Báo Hỏng
+            </button>
+        </div>
+
+        <!-- My reports -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 font-bold text-slate-900 flex items-center gap-2">
+                <i data-lucide="history" class="w-5 h-5 text-slate-400"></i> Báo cáo của tôi
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead><tr class="bg-slate-50 text-slate-500 font-bold text-[10px] uppercase tracking-wider border-b border-slate-200">
+                        <th class="py-3 px-4 text-left">Thiết bị</th>
+                        <th class="py-3 px-4 text-center">Mức độ</th>
+                        <th class="py-3 px-4 text-left">Mô tả</th>
+                        <th class="py-3 px-4">Ngày</th>
+                        <th class="py-3 px-4 text-center">Trạng thái</th>
+                    </tr></thead>
+                    <tbody id="user-reports-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ====== TAB: ĐĂNG KÝ MƯỢN TRẢ ====== -->
+<section id="tab-muon-tra" class="space-y-6 hidden">
+    <div class="border-b border-slate-200 pb-5">
+        <h2 class="text-2xl font-extrabold text-slate-900">Phiếu Yêu Cầu Mượn Thiết Bị</h2>
+        <p class="text-sm text-slate-500 mt-1">Học sinh đăng ký mượn thiết bị thực hiện đề tài khoa học.</p>
+    </div>
+    <div class="grid lg:grid-cols-12 gap-8">
+        <div class="lg:col-span-5">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2"><i data-lucide="clipboard-edit" class="text-stemBlue-600 w-5 h-5"></i>Điền Phiếu Đăng Ký</h3>
+                <form id="borrow-form" onsubmit="handleBorrowSubmit(event)" class="space-y-4">
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Họ và tên</label><input type="text" id="borrow-name" required readonly class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed font-medium"></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Lớp</label><input type="text" id="borrow-class" required readonly class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">SĐT</label><input type="text" id="borrow-phone" required readonly class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed"></div>
+                    </div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Chọn thiết bị</label><select id="borrow-device-id" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-stemBlue-500"></select></div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Số lượng</label><input type="number" id="borrow-qty" required min="1" value="1" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"></div>
+                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Ngày trả</label><input type="date" id="borrow-return-date" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"></div>
+                    </div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Mục đích</label><textarea id="borrow-purpose" required rows="2" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"></textarea></div>
+                    <button type="submit" class="w-full bg-stemBlue-600 hover:bg-stemBlue-700 text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2"><i data-lucide="send" class="w-4 h-4"></i> Gửi Yêu Cầu</button>
+                </form>
+            </div>
+        </div>
+        <div class="lg:col-span-7 space-y-4">
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2"><i data-lucide="history" class="text-stemBlue-600 w-5 h-5"></i>Lịch sử mượn đồ</h3>
+            <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                <div class="overflow-x-auto"><table class="w-full text-left text-sm">
+                    <thead><tr class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold text-[11px] uppercase tracking-wider">
+                        <th class="py-4 px-4">Thiết bị</th><th class="py-4 px-4 text-center">SL</th><th class="py-4 px-4">Hạn Trả</th><th class="py-4 px-4">Trạng thái</th>
+                    </tr></thead>
+                    <tbody id="user-borrow-history-tbody"></tbody>
+                </table></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ====== TAB: ADMIN PANEL ====== -->
+<section id="tab-admin-panel" class="space-y-8 hidden">
+    <div class="flex items-center justify-between border-b border-slate-200 pb-5">
+        <div class="flex items-center gap-3">
+            <div class="p-3 bg-purple-100 text-purple-700 rounded-2xl border border-purple-200"><i data-lucide="shield" class="w-6 h-6"></i></div>
+            <div><h2 class="text-2xl font-extrabold text-slate-900">Khu Vực Quản Trị Hệ Thống</h2><p class="text-sm text-slate-500 mt-1">Xử lý phiếu mượn, báo hỏng, nhật ký và tài khoản học sinh.</p></div>
+        </div>
+        <button onclick="openTelegramModal()" class="flex items-center gap-2 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 font-bold text-sm px-4 py-2 rounded-xl transition">
+            <i data-lucide="send" class="w-4 h-4"></i> Cài đặt Telegram
+        </button>
+    </div>
+
+    <!-- Admin Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-purple-50 border border-purple-200 p-5 rounded-2xl flex items-center gap-3 shadow-sm">
+            <div class="p-2.5 bg-purple-100 text-purple-700 rounded-xl"><i data-lucide="bell" class="w-5 h-5"></i></div>
+            <div><p class="text-2xl font-black text-purple-900" id="admin-pending-count">0</p><p class="text-[10px] text-purple-600 font-bold uppercase tracking-wider">Chờ duyệt mượn</p></div>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl flex items-center gap-3 shadow-sm">
+            <div class="p-2.5 bg-emerald-100 text-emerald-700 rounded-xl"><i data-lucide="package-minus" class="w-5 h-5"></i></div>
+            <div><p class="text-2xl font-black text-emerald-900" id="admin-active-loans">0</p><p class="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Đang mượn</p></div>
+        </div>
+        <div class="bg-amber-50 border border-amber-200 p-5 rounded-2xl flex items-center gap-3 shadow-sm">
+            <div class="p-2.5 bg-amber-100 text-amber-700 rounded-xl"><i data-lucide="triangle-alert" class="w-5 h-5"></i></div>
+            <div><p class="text-2xl font-black text-amber-900" id="admin-report-count">0</p><p class="text-[10px] text-amber-600 font-bold uppercase tracking-wider">Báo hỏng chờ xử lý</p></div>
+        </div>
+        <div class="bg-blue-50 border border-blue-200 p-5 rounded-2xl flex items-center gap-3 shadow-sm">
+            <div class="p-2.5 bg-blue-100 text-blue-700 rounded-xl"><i data-lucide="users-2" class="w-5 h-5"></i></div>
+            <div><p class="text-2xl font-black text-blue-900" id="admin-total-accounts">0</p><p class="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Tài khoản</p></div>
+        </div>
+    </div>
+
+    <!-- Loans Table -->
+    <div class="space-y-3">
+        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2"><i data-lucide="clipboard-check" class="text-purple-600 w-5 h-5"></i>Xử lý Phiếu Mượn & Trả Đồ</h3>
+        <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+            <div class="overflow-x-auto"><table class="w-full text-left text-sm">
+                <thead><tr class="bg-slate-50 text-slate-500 border-b font-bold text-[11px] uppercase tracking-wider">
+                    <th class="py-4 px-4">Học sinh</th><th class="py-4 px-4">Thiết bị</th><th class="py-4 px-4 text-center">SL</th><th class="py-4 px-4">Mục đích / Hạn trả</th><th class="py-4 px-4 text-center">Hành động</th>
+                </tr></thead>
+                <tbody id="admin-pending-loans-tbody"></tbody>
+            </table></div>
+        </div>
+    </div>
+
+    <!-- Reports Table -->
+    <div class="space-y-3">
+        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2"><i data-lucide="triangle-alert" class="text-amber-500 w-5 h-5"></i>Báo Hỏng Thiết Bị Chờ Xử Lý</h3>
+        <div class="bg-white border border-amber-200 rounded-2xl overflow-hidden shadow-sm">
+            <div class="overflow-x-auto"><table class="w-full text-left text-sm">
+                <thead><tr class="bg-amber-50 text-amber-700 border-b border-amber-200 font-bold text-[11px] uppercase tracking-wider">
+                    <th class="py-4 px-4">Học sinh</th><th class="py-4 px-4">Thiết bị</th><th class="py-4 px-4 text-center">Mức độ</th><th class="py-4 px-4">Mô tả lỗi</th><th class="py-4 px-4">Trạng thái</th><th class="py-4 px-4 text-center">Xử lý</th>
+                </tr></thead>
+                <tbody id="admin-reports-tbody"></tbody>
+            </table></div>
+        </div>
+    </div>
+
+    <!-- User Management -->
+    <div class="bg-white border-2 border-rose-100 rounded-2xl overflow-hidden shadow-sm p-6 relative space-y-4">
+        <div class="absolute top-0 right-0 bg-rose-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">Nhạy cảm</div>
+        <div>
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2"><i data-lucide="users-2" class="text-rose-600 w-5 h-5"></i>Quản Lý Tài Khoản & Khôi Phục Mật Khẩu</h3>
+            <p class="text-xs text-slate-500 mt-1">Admin có thể đặt lại mật khẩu tùy chỉnh hoặc reset về mặc định "123456" cho học sinh.</p>
+        </div>
+        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+            <table class="w-full text-left text-sm">
+                <thead><tr class="bg-slate-50 text-slate-600 border-b border-slate-200 font-bold text-[11px] uppercase tracking-wider">
+                    <th class="py-3 px-4">Tài khoản</th><th class="py-3 px-4">Họ và Tên</th><th class="py-3 px-4">Lớp</th><th class="py-3 px-4">Ngày sinh</th><th class="py-3 px-4">Trạng thái</th><th class="py-3 px-4 text-center">Hành động</th>
+                </tr></thead>
+                <tbody id="admin-users-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h3 class="text-md font-bold text-slate-800 flex items-center gap-2 mb-4"><i data-lucide="zap" class="w-5 h-5 text-amber-500 fill-amber-500"></i>Thao tác nhanh</h3>
+        <div class="flex flex-wrap gap-2">
+            <button onclick="switchTab('co-so-vat-chat'); openDeviceModal()" class="px-4 py-2 bg-stemBlue-50 hover:bg-stemBlue-100 text-stemBlue-700 rounded-xl text-sm font-bold border border-stemBlue-100 flex items-center gap-1.5"><i data-lucide="plus-circle" class="w-4 h-4"></i> Nhập linh kiện mới</button>
+            <button onclick="switchTab('lich-hoc'); openScheduleModal()" class="px-4 py-2 bg-teal-50 hover:bg-teal-100 text-teal-700 rounded-xl text-sm font-bold border border-teal-100 flex items-center gap-1.5"><i data-lucide="calendar-plus" class="w-4 h-4"></i> Đăng lịch hoạt động</button>
+            <button onclick="switchTab('nhat-ky'); openJournalModal()" class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-sm font-bold border border-blue-100 flex items-center gap-1.5"><i data-lucide="notebook-pen" class="w-4 h-4"></i> Ghi nhật ký Lab</button>
+            <button onclick="switchTab('truyen-thong'); openPostModal()" class="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-sm font-bold border border-indigo-100 flex items-center gap-1.5"><i data-lucide="pen-tool" class="w-4 h-4"></i> Viết bài truyền thông</button>
+        </div>
+    </div>
+</section>
+
+</main><!-- /main -->
+
+
+<!-- FOOTER -->
+<footer class="bg-slate-900 text-white border-t border-slate-800 mt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="space-y-3">
+                <h2 class="font-extrabold text-base">BĐQ STEM LAB <span class="text-[10px] font-bold text-pvn-400 ml-1">v2.0</span></h2>
+                <p class="text-slate-400 text-xs leading-relaxed">Không gian ươm mầm tài năng sáng tạo công nghệ, lập trình, khoa học của trường THPT Bắc Đông Quan.</p>
+            </div>
+            <div>
+                <h3 class="text-sm font-bold text-slate-200 uppercase tracking-widest mb-4">Điều hướng</h3>
+                <div class="grid grid-cols-2 gap-2 text-xs text-slate-400">
+                    <a href="#" onclick="switchTab('nhat-ky')" class="hover:text-white transition-colors">Nhật ký Lab</a>
+                    <a href="#" onclick="switchTab('bao-hong')" class="hover:text-white transition-colors">Báo hỏng TB</a>
+                    <a href="#" onclick="switchTab('co-so-vat-chat')" class="hover:text-white transition-colors">Kho Thiết bị</a>
+                    <a href="#" onclick="switchTab('kho-tai-lieu')" class="hover:text-white transition-colors">Tài liệu học tập</a>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-sm font-bold text-slate-200 uppercase tracking-widest mb-4">Liên hệ</h3>
+                <p class="text-xs text-slate-400 leading-relaxed">Phòng STEM Lab – THPT Bắc Đông Quan</p>
+                <p class="text-xs text-slate-400 mt-1">Email: stemlab.bdq@gmail.com</p>
+                <p class="text-xs text-slate-400">Điện thoại: 0936984893 – Mr.Vinh</p>
+            </div>
+        </div>
+        <div class="border-t border-slate-800 mt-8 pt-6 text-center text-[11px] text-slate-500">
+            &copy; 2026 STEM LAB Bắc Đông Quan v2.0 — Thiết kế bởi: Phạm Công Vinh
+        </div>
+    </div>
+</footer>
+
+
+<!-- ===================== MODALS ===================== -->
+
+<!-- AUTH MODAL -->
+<div id="auth-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <h3 class="font-extrabold text-lg text-slate-900" id="auth-modal-title">Đăng Nhập</h3>
+            <button onclick="closeAuthModal()" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-xl hover:bg-rose-50 transition-all"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="p-6 max-h-[80vh] overflow-y-auto">
+            <div class="flex gap-1 bg-slate-100/50 p-1 rounded-xl mb-6">
+                <button id="auth-tab-login" onclick="switchAuthTab('login')" class="flex-1 text-center py-2 text-sm font-bold rounded-lg bg-white text-stemBlue-700 shadow-sm border border-slate-200">Đăng nhập</button>
+                <button id="auth-tab-register" onclick="switchAuthTab('register')" class="flex-1 text-center py-2 text-sm font-bold rounded-lg text-slate-500 hover:text-slate-800">Tạo tài khoản</button>
+            </div>
+            <div id="auth-feedback" class="hidden p-3 bg-rose-50 text-rose-700 text-xs rounded-xl border border-rose-200 mb-4 font-semibold flex items-center gap-2">
+                <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i><span id="auth-feedback-text">Lỗi</span>
+            </div>
+            <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                <input type="hidden" id="auth-action-type" value="login">
+                <div id="auth-register-fields" class="hidden space-y-4 border-b border-slate-100 pb-4 mb-4">
+                    <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1.5">Họ và tên học sinh</label><input type="text" id="auth-name" placeholder="VD: Nguyễn Văn Anh" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-stemBlue-500"></div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1.5">Lớp</label><input type="text" id="auth-class" placeholder="VD: 11A1" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-stemBlue-500 uppercase"></div>
+                        <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1.5">Ngày sinh</label><input type="date" id="auth-dob" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-stemBlue-500"></div>
+                    </div>
+                </div>
+                <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1.5">Email hoặc Số điện thoại</label><input type="text" id="auth-username" required placeholder="Nhập Email hoặc SĐT" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-stemBlue-500"></div>
+                <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1.5">Mật khẩu</label><input type="password" id="auth-password" required placeholder="Tối thiểu 6 ký tự" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-stemBlue-500"></div>
+                <button type="submit" id="auth-submit-btn" class="w-full bg-stemBlue-600 hover:bg-stemBlue-700 text-white font-extrabold py-3 rounded-xl shadow-md">ĐĂNG NHẬP</button>
+            </form>
+            <p class="mt-4 text-center text-[11px] text-slate-400">Test: <strong>admin/admin123</strong> | <strong>0987654321/123456</strong></p>
+        </div>
+    </div>
+</div>
+
+<!-- SYSTEM DIALOG -->
+<div id="dialog-modal" class="fixed inset-0 z-[60] bg-slate-950/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6 text-center space-y-4 border border-slate-100">
+        <div id="dialog-icon-container" class="w-14 h-14 rounded-full mx-auto flex items-center justify-center text-xl"></div>
+        <h3 class="font-extrabold text-xl text-slate-900" id="dialog-title">Thông báo</h3>
+        <p class="text-sm text-slate-600 leading-relaxed font-medium" id="dialog-msg"></p>
+        <button onclick="closeDialog()" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold py-3 rounded-xl">Đã hiểu</button>
+    </div>
+</div>
+
+<!-- DEVICE MODAL -->
+<div id="device-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2"><i data-lucide="package" class="w-5 h-5 text-stemBlue-600"></i> Quản lý Thiết Bị</h3>
+            <button onclick="closeDeviceModal()" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-xl hover:bg-rose-50"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form id="device-form" onsubmit="handleDeviceSubmit(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+            <input type="hidden" id="edit-device-id">
+            <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1.5">Link Ảnh (URL)</label><input type="url" id="device-image" placeholder="https://..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"></div>
+            <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1.5">Tên thiết bị</label><input type="text" id="device-name" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"></div>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1.5">Phân loại</label><select id="device-category" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"><option value="Robotics">Khung gầm & Cơ khí</option><option value="Vi điều khiển">Mạch & Cảm biến</option><option value="In 3D">Thiết bị In 3D</option><option value="Đo lường">Dụng cụ Đo lường</option></select></div>
+                <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1.5">Mã thiết bị</label><input type="text" id="device-code" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-stemBlue-500"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-3 p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Tổng SL</label><input type="number" id="device-total" required min="1" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-stemBlue-500 font-bold"></div>
+                <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Khả dụng</label><input type="number" id="device-available" required min="0" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-stemBlue-500 font-bold text-stemBlue-600"></div>
+                <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Tình trạng</label><select id="device-status" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-stemBlue-500"><option value="Tốt">Bình thường</option><option value="Hỏng nhẹ">Bảo trì</option><option value="Hỏng">Hỏng</option></select></div>
+            </div>
+            <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1.5">Vị trí tủ/ngăn</label><input type="text" id="device-desc" placeholder="Tủ A, Ngăn 2..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"></div>
+            <button type="submit" class="w-full bg-stemBlue-600 hover:bg-stemBlue-700 text-white font-extrabold py-3 rounded-xl shadow-md flex items-center justify-center gap-2"><i data-lucide="save" class="w-4 h-4"></i> Lưu Thiết Bị</button>
+        </form>
+    </div>
+</div>
+
+<!-- FULL POST MODAL -->
+<div id="full-post-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="relative bg-white w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
+        <button onclick="closeFullPostModal()" class="absolute top-4 right-4 z-10 bg-black/50 text-white hover:bg-rose-500 p-2 rounded-full backdrop-blur-md transition-all"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <div class="max-h-[85vh] overflow-y-auto">
+            <div id="full-post-img-container" class="w-full h-64 bg-slate-100 relative">
+                <img id="full-post-img" src="" alt="Post Cover" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
+                <div class="absolute bottom-6 left-6 right-6">
+                    <span id="full-post-category" class="px-3 py-1 bg-stemBlue-600 text-white rounded-lg text-xs font-bold mb-2 inline-block">Danh mục</span>
+                    <h2 id="full-post-title" class="text-2xl md:text-4xl font-extrabold text-white leading-tight drop-shadow-md">Tiêu đề</h2>
+                </div>
+            </div>
+            <div class="p-6 md:p-8 space-y-5">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-4">
+                    <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200"><i data-lucide="pen-tool" class="w-5 h-5 text-slate-400"></i></div>
+                    <div><p class="text-sm font-bold text-slate-900" id="full-post-author">Tác giả</p><p class="text-xs text-slate-500 font-medium" id="full-post-date">Ngày đăng</p></div>
+                </div>
+                <div id="full-post-content" class="text-slate-700 text-base leading-relaxed whitespace-pre-line font-medium"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SCHEDULE MODAL -->
+<div id="schedule-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <h3 class="font-extrabold text-lg text-slate-900">Tạo Lịch Hoạt Động</h3>
+            <button onclick="closeScheduleModal()" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-xl"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form id="schedule-form" onsubmit="handleScheduleSubmit(event)" class="p-6 space-y-4">
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Tiêu đề</label><input type="text" id="sched-title" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"></div>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Ngày</label><input type="date" id="sched-date" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Khung giờ</label><input type="text" id="sched-time" required placeholder="14:00 - 16:30" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Người Phụ trách</label><input type="text" id="sched-instructor" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Đối tượng</label><input type="text" id="sched-target" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"></div>
+            </div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nội dung</label><textarea id="sched-desc" required rows="3" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"></textarea></div>
+            <button type="submit" class="w-full bg-stemBlue-600 text-white font-bold py-2.5 rounded-xl hover:bg-stemBlue-700">Lưu Lịch Biểu</button>
+        </form>
+    </div>
+</div>
+
+<!-- MATERIAL MODAL -->
+<div id="material-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <h3 class="font-extrabold text-lg text-slate-900">Tải lên Thư Viện</h3>
+            <button onclick="closeMaterialModal()" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-xl"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form id="material-form" onsubmit="handleMaterialSubmit(event)" class="p-6 space-y-4">
+            <input type="text" id="mat-title" required placeholder="Tên tài liệu..." class="w-full px-3 py-2 bg-slate-50 border rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500">
+            <div class="grid grid-cols-2 gap-4">
+                <select id="mat-type" required class="w-full px-3 py-2 bg-slate-50 border rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"><option value="video">Video</option><option value="pdf">PDF</option><option value="guide">Hướng dẫn</option></select>
+                <input type="text" id="mat-author" required placeholder="Tác giả" class="w-full px-3 py-2 bg-slate-50 border rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500">
+            </div>
+            <input type="text" id="mat-desc" required placeholder="Mô tả..." class="w-full px-3 py-2 bg-slate-50 border rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500">
+            <input type="url" id="mat-url" required placeholder="Link URL..." class="w-full px-3 py-2 bg-slate-50 border rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500">
+            <button type="submit" class="w-full bg-stemBlue-600 text-white font-bold py-2.5 rounded-xl hover:bg-stemBlue-700">Đăng Tài Liệu</button>
+        </form>
+    </div>
+</div>
+
+<!-- POST MODAL -->
+<div id="post-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <h3 class="font-extrabold text-lg text-slate-900">Viết Bài Tin Tức</h3>
+            <button onclick="closePostModal()" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-xl"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form id="post-form" onsubmit="handlePostSubmit(event)" class="p-6 space-y-4">
+            <input type="text" id="post-title" required placeholder="Tiêu đề bài viết..." class="w-full px-3 py-2 bg-slate-50 border rounded-xl text-sm font-bold focus:ring-2 focus:ring-stemBlue-500">
+            <div class="grid grid-cols-2 gap-4">
+                <select id="post-category" required class="w-full px-3 py-2 bg-slate-50 border rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"><option value="Tin tức">Tin tức</option><option value="Dự án">Dự án học sinh</option><option value="Thành tích">Thành tích</option></select>
+                <input type="text" id="post-image" placeholder="Link ảnh bìa URL..." class="w-full px-3 py-2 bg-slate-50 border rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500">
+            </div>
+            <textarea id="post-content" required rows="6" placeholder="Nội dung bài viết..." class="w-full px-3 py-2 bg-slate-50 border rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500"></textarea>
+            <button type="submit" class="w-full bg-stemBlue-600 text-white font-bold py-2.5 rounded-xl hover:bg-stemBlue-700">Xuất bản Bài viết</button>
+        </form>
+    </div>
+</div>
+
+<!-- JOURNAL MODAL (MỚI) -->
+<div id="journal-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-blue-100">
+        <div class="px-6 py-4 border-b border-blue-100 flex items-center justify-between bg-blue-50">
+            <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2"><i data-lucide="notebook-pen" class="w-5 h-5 text-blue-600"></i> Ghi Nhật Ký Hoạt Động</h3>
+            <button onclick="closeJournalModal()" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-xl hover:bg-rose-50"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form id="journal-form" onsubmit="handleJournalSubmit(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Loại hoạt động</label>
+                    <select id="jn-type" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500">
+                        <option value="Buổi học">📚 Buổi học</option>
+                        <option value="Kiểm kê">📋 Kiểm kê</option>
+                        <option value="Bảo trì">🔧 Bảo trì</option>
+                        <option value="Sự kiện">🎯 Sự kiện</option>
+                        <option value="Khác">📌 Khác</option>
+                    </select>
+                </div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Trạng thái</label>
+                    <select id="jn-status" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500">
+                        <option value="Hoàn thành">✓ Hoàn thành</option>
+                        <option value="Đang diễn ra">⏳ Đang diễn ra</option>
+                    </select>
+                </div>
+            </div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Tiêu đề / Chủ đề</label>
+                <input type="text" id="jn-title" required placeholder="VD: Buổi học Arduino điều khiển motor..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 font-medium">
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+                <div class="col-span-1"><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Ngày</label><input type="date" id="jn-date" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"></div>
+                <div class="col-span-1"><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Giờ bắt đầu</label><input type="time" id="jn-time" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"></div>
+                <div class="col-span-1"><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Số người</label><input type="number" id="jn-participants" min="0" value="0" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 font-bold"></div>
+            </div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nội dung chi tiết</label>
+                <textarea id="jn-content" required rows="4" placeholder="Mô tả hoạt động, kết quả đạt được, vấn đề phát sinh..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"></textarea>
+            </div>
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700 font-medium flex items-start gap-2">
+                <i data-lucide="send" class="w-4 h-4 shrink-0 mt-0.5"></i>
+                Sau khi lưu, nhật ký này sẽ được gửi thông báo đến Telegram (nếu đã cấu hình).
+            </div>
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2">
+                <i data-lucide="notebook-pen" class="w-4 h-4"></i> Lưu Nhật Ký & Thông Báo
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- REPORT MODAL (MỚI) -->
+<div id="report-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="relative bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-amber-200">
+        <div class="px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50">
+            <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2"><i data-lucide="triangle-alert" class="w-5 h-5 text-amber-500"></i> Báo Hỏng Thiết Bị</h3>
+            <button onclick="closeReportModal()" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-xl hover:bg-rose-50"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form id="report-form" onsubmit="handleReportSubmit(event)" class="p-6 space-y-4">
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Chọn thiết bị bị hỏng</label>
+                <select id="report-device-id" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500"></select>
+            </div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Mức độ hỏng</label>
+                <select id="report-severity" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500">
+                    <option value="Nhẹ">🟢 Nhẹ — Thiết bị vẫn dùng được một phần</option>
+                    <option value="Vừa">🟡 Vừa — Ảnh hưởng đáng kể đến chức năng</option>
+                    <option value="Nặng">🔴 Nặng — Thiết bị hoàn toàn không hoạt động</option>
+                </select>
+            </div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Mô tả chi tiết triệu chứng lỗi</label>
+                <textarea id="report-description" required rows="4" placeholder="VD: Chân Vcc bị gãy, không cắm được vào breadboard. LED báo nguồn không sáng khi cấp 5V..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500"></textarea>
+            </div>
+            <div class="bg-amber-50 border border-amber-100 rounded-xl p-3 text-xs text-amber-700 font-medium flex items-center gap-2">
+                <i data-lucide="send" class="w-4 h-4 shrink-0"></i>
+                Admin sẽ nhận thông báo qua Telegram ngay sau khi bạn gửi.
+            </div>
+            <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2">
+                <i data-lucide="send" class="w-4 h-4"></i> Gửi Báo Cáo Hỏng Ngay
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- TELEGRAM CONFIG MODAL (MỚI) -->
+<div id="telegram-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-sky-100">
+        <div class="px-6 py-4 border-b border-sky-100 flex items-center justify-between bg-sky-50">
+            <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2"><i data-lucide="send" class="w-5 h-5 text-sky-600"></i> Cài Đặt Telegram Bot</h3>
+            <button onclick="closeTelegramModal()" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-xl hover:bg-rose-50"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form onsubmit="saveTelegramConfig(event)" class="p-6 space-y-5">
+            <!-- Hướng dẫn -->
+            <div class="bg-sky-50 border border-sky-200 rounded-xl p-4 space-y-2 text-xs text-sky-800">
+                <p class="font-bold text-sm text-sky-900">📖 Hướng dẫn lấy Bot Token & Chat ID:</p>
+                <ol class="list-decimal pl-4 space-y-1 leading-relaxed">
+                    <li>Mở Telegram → tìm <strong>@BotFather</strong> → gõ <code class="bg-sky-100 px-1 py-0.5 rounded font-mono">/newbot</code> → đặt tên → lấy <strong>Bot Token</strong></li>
+                    <li>Nhắn tin <code class="bg-sky-100 px-1 py-0.5 rounded font-mono">/start</code> cho bot vừa tạo</li>
+                    <li>Truy cập: <code class="bg-sky-100 px-1 py-0.5 rounded font-mono">api.telegram.org/bot<strong>{TOKEN}</strong>/getUpdates</code> để lấy <strong>Chat ID</strong> (trường <code>id</code> trong <code>from</code>)</li>
+                </ol>
+            </div>
+
+            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div>
+                    <p class="text-sm font-bold text-slate-800">Bật thông báo Telegram</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Gửi alert khi mượn đồ, báo hỏng, ghi nhật ký</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="tg-enabled" class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
+                </label>
+            </div>
+
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Bot Token</label>
+                <input type="text" id="tg-bot-token" placeholder="VD: 7123456789:AAGvx3KpBgKfp..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-sky-500 focus:outline-none">
+            </div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Chat ID (nhóm / cá nhân)</label>
+                <input type="text" id="tg-chat-id" placeholder="VD: -100123456789 (nhóm) hoặc 123456789 (cá nhân)" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-sky-500 focus:outline-none">
+            </div>
+
+            <div class="flex gap-3">
+                <button type="button" id="tg-test-btn" onclick="testTelegramSend()"
+                    class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2 text-sm">
+                    <i data-lucide="wifi" class="w-4 h-4"></i> Gửi tin nhắn test
+                </button>
+                <button type="submit" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold py-2.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm">
+                    <i data-lucide="save" class="w-4 h-4"></i> Lưu cấu hình
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- RESET PASSWORD MODAL (MỚI) -->
+<div id="reset-password-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="relative bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden border border-rose-100">
+        <div class="px-6 py-4 border-b border-rose-100 flex items-center justify-between bg-rose-50">
+            <h3 class="font-extrabold text-lg text-slate-900 flex items-center gap-2"><i data-lucide="key" class="w-5 h-5 text-rose-600"></i> Đặt Lại Mật Khẩu</h3>
+            <button onclick="closeResetPasswordModal()" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-xl hover:bg-rose-50"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <form onsubmit="handleResetPasswordSubmit(event)" class="p-6 space-y-4">
+            <input type="hidden" id="reset-pw-username">
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-bold text-slate-700 flex items-center gap-2">
+                <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
+                <span id="reset-pw-display-name">Tên tài khoản</span>
+            </div>
+            <div id="reset-pw-feedback" class="hidden p-3 bg-rose-50 text-rose-700 text-xs rounded-xl border border-rose-200 font-semibold flex items-center gap-2">
+                <i data-lucide="alert-circle" class="w-4 h-4"></i><span id="reset-pw-feedback-text">Lỗi</span>
+            </div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Mật khẩu mới</label>
+                <input type="password" id="reset-pw-new" required placeholder="Tối thiểu 6 ký tự" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none">
+            </div>
+            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Xác nhận mật khẩu mới</label>
+                <input type="password" id="reset-pw-confirm" required placeholder="Nhập lại mật khẩu mới" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-rose-500 focus:outline-none">
+            </div>
+            <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2">
+                <i data-lucide="check" class="w-4 h-4"></i> Xác nhận Đặt Lại Mật Khẩu
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<!-- ===================== SCRIPTS (theo thứ tự phụ thuộc) ===================== -->
+<script src="js/data.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/telegram.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/devices.js"></script>
+<script src="js/schedules.js"></script>
+<script src="js/materials.js"></script>
+<script src="js/posts.js"></script>
+<script src="js/borrow.js"></script>
+<script src="js/journal.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
