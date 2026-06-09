@@ -1,0 +1,10 @@
+export type Tab =
+  | 'trang-chu'
+  | 'co-so-vat-chat'
+  | 'lich-hoc'
+  | 'kho-tai-lieu'
+  | 'truyen-thong'
+  | 'muon-tra'
+  | 'nhat-ky'
+  | 'bao-hong'
+  | 'admin-panel'
