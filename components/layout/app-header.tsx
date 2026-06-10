@@ -73,7 +73,7 @@ export function AppHeader({
             <button
               key={tabKey}
               onClick={() => onSwitchTab(tabKey)}
-              className={`rounded-lg px-1.5 py-1.5 text-xs font-medium transition-all 2xl:px-3 2xl:py-2 2xl:text-sm ${
+              className={`rounded-lg px-2.5 py-2 text-sm font-semibold transition-all 2xl:px-4 2xl:py-2.5 2xl:text-base ${
                 tab === tabKey ? 'bg-stemBlue-50 text-stemBlue-600' : 'text-slate-600 hover:bg-slate-50 hover:text-stemBlue-600'
               }`}
             >
@@ -84,7 +84,7 @@ export function AppHeader({
             <>
               <button
                 onClick={() => onSwitchTab('muon-tra')}
-                className={`rounded-lg border border-stemBlue-200 px-1.5 py-1.5 text-xs font-medium transition-all 2xl:px-3 2xl:py-2 2xl:text-sm ${
+                className={`rounded-lg border border-stemBlue-200 px-2.5 py-2 text-sm font-semibold transition-all 2xl:px-4 2xl:py-2.5 2xl:text-base ${
                   tab === 'muon-tra' ? 'bg-stemBlue-50 text-stemBlue-600' : 'bg-white text-stemBlue-600 hover:bg-stemBlue-50'
                 }`}
               >
@@ -92,7 +92,7 @@ export function AppHeader({
               </button>
               <button
                 onClick={() => onSwitchTab('bao-hong')}
-                className={`flex items-center gap-1 rounded-lg border border-amber-200 px-1.5 py-1.5 text-xs font-medium transition-all 2xl:px-3 2xl:py-2 2xl:text-sm ${
+                className={`flex items-center gap-1.5 rounded-lg border border-amber-200 px-2.5 py-2 text-sm font-semibold transition-all 2xl:px-4 2xl:py-2.5 2xl:text-base ${
                   tab === 'bao-hong' ? 'bg-amber-50 text-amber-600' : 'bg-white text-amber-600 hover:bg-amber-50'
                 }`}
               >
@@ -109,17 +109,17 @@ export function AppHeader({
           {isAdmin && (
             <button
               onClick={() => onSwitchTab('admin-panel')}
-              className="flex items-center gap-1 rounded-lg bg-purple-600 px-2 py-1 text-[10px] font-bold text-white hover:bg-purple-700 md:px-3 md:py-1.5 md:text-xs"
+              className="flex items-center gap-1 rounded-lg bg-purple-600 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-purple-700 md:px-3.5 md:py-2 md:text-sm"
             >
               <Settings className="h-4 w-4" /> Quản trị
             </button>
           )}
           {!authUser ? (
             <div className="flex items-center gap-1 md:gap-2">
-              <button onClick={() => onOpenAuth('login')} className="px-2 py-1 text-xs font-semibold text-slate-600 hover:text-stemBlue-600 md:px-3 md:py-1.5 md:text-sm">
+              <button onClick={() => onOpenAuth('login')} className="px-2 py-1 text-sm font-semibold text-slate-600 hover:text-stemBlue-600 md:px-3.5 md:py-2 md:text-base">
                 Đăng nhập
               </button>
-              <button onClick={() => onOpenAuth('register')} className="hidden rounded-lg bg-stemBlue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-stemBlue-700 sm:inline-block md:text-sm">
+              <button onClick={() => onOpenAuth('register')} className="hidden rounded-lg bg-stemBlue-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-stemBlue-700 sm:inline-block md:text-base">
                 Đăng ký
               </button>
             </div>
