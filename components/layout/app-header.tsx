@@ -63,7 +63,7 @@ export function AppHeader({
           </div>
           <div className="leading-tight text-left">
             <h1 className="text-sm font-black tracking-tight text-stemBlue-900 md:text-xl">STEM LAB</h1>
-            <div className="text-[9px] font-bold uppercase tracking-wide text-slate-700 md:text-[11px]">THPT Bắc Đông Quan</div>
+            <div className="text-[8px] font-semibold uppercase tracking-[0.12em] text-slate-700 md:text-[10px]">THPT Bắc Đông Quan</div>
             <div className="hidden text-[9px] text-slate-500 lg:block md:text-xs">Innovation • Robotics • AI • Engineering</div>
           </div>
         </button>

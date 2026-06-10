@@ -120,6 +120,25 @@ ALTER TABLE loans           ENABLE ROW LEVEL SECURITY;
 ALTER TABLE journal_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE device_reports  ENABLE ROW LEVEL SECURITY;
 
+-- Helper: avoid recursive RLS lookups when checking admin role
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.user_profiles
+    WHERE id = auth.uid()
+      AND role = 'admin'
+  );
+$$;
+
+REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
+
 -- Public READ policies
 DROP POLICY IF EXISTS "Public read devices" ON devices;
 CREATE POLICY "Public read devices"         ON devices         FOR SELECT USING (true);
@@ -153,35 +172,35 @@ CREATE POLICY "Users insert own profile" ON user_profiles FOR INSERT WITH CHECK 
 -- Admin full access (check role in user_profiles)
 DROP POLICY IF EXISTS "Admin all devices" ON devices;
 CREATE POLICY "Admin all devices"    ON devices         FOR ALL USING (
-  EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
+  public.is_admin()
 );
 DROP POLICY IF EXISTS "Admin all schedules" ON schedules;
 CREATE POLICY "Admin all schedules"  ON schedules       FOR ALL USING (
-  EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
+  public.is_admin()
 );
 DROP POLICY IF EXISTS "Admin all materials" ON materials;
 CREATE POLICY "Admin all materials"  ON materials       FOR ALL USING (
-  EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
+  public.is_admin()
 );
 DROP POLICY IF EXISTS "Admin all posts" ON posts;
 CREATE POLICY "Admin all posts"      ON posts           FOR ALL USING (
-  EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
+  public.is_admin()
 );
 DROP POLICY IF EXISTS "Admin all loans" ON loans;
 CREATE POLICY "Admin all loans"      ON loans           FOR ALL USING (
-  EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
+  public.is_admin()
 );
 DROP POLICY IF EXISTS "Admin all reports" ON device_reports;
 CREATE POLICY "Admin all reports"    ON device_reports  FOR ALL USING (
-  EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
+  public.is_admin()
 );
 DROP POLICY IF EXISTS "Admin all journal" ON journal_entries;
 CREATE POLICY "Admin all journal"    ON journal_entries FOR ALL USING (
-  EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
+  public.is_admin()
 );
 DROP POLICY IF EXISTS "Admin all profiles" ON user_profiles;
 CREATE POLICY "Admin all profiles"   ON user_profiles   FOR ALL USING (
-  EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin')
+  public.is_admin()
 );
 
 -- ============================================================

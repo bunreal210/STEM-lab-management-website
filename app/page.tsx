@@ -560,9 +560,9 @@ export default function App() {
               </div>
             </div>
             <div className="leading-tight">
-              <h1 className="font-black text-sm md:text-xl text-stemBlue-900 tracking-tight">STEM LAB</h1>
-              <div className="text-[9px] md:text-[11px] font-bold text-slate-700 uppercase tracking-wide">THPT Bắc Đông Quan</div>
-              <div className="hidden lg:block text-[9px] md:text-xs text-slate-500">Innovation • Robotics • AI • Engineering</div>
+              <h1 className="font-black text-sm md:text-xl text-stemBlue-900 tracking-tight">STEM LABORATORY</h1>
+              <div className="text-[8px] md:text-[10px] font-semibold text-slate-700 uppercase tracking-[0.12em]">THPT Bắc Đông Quan</div>
+              <div className="hidden lg:block text-[9px] md:text-xs text-slate-500">Innovation • Creativity • Pioneering</div>
             </div>
           </div>
 
@@ -663,7 +663,7 @@ export default function App() {
               <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-blue-950/85 to-slate-900/80" />
               <div className="relative z-10 px-8 py-20 max-w-6xl mx-auto text-center">
                 <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight">STEM LAB
-                  <span className="block text-3xl sm:text-4xl lg:text-5xl xl:text-6xl bg-gradient-to-r from-sky-300 via-cyan-200 to-emerald-300 bg-clip-text text-transparent">THPT BẮC ĐÔNG QUAN</span>
+                  <span className="block text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-sky-300 via-cyan-200 to-emerald-300 bg-clip-text text-transparent">THPT BẮC ĐÔNG QUAN</span>
                 </h1>
                 <p className="mt-4 md:mt-6 text-sm md:text-lg text-slate-200 max-w-2xl mx-auto">Không gian sáng tạo dành cho Robotics, AI, IoT, Lập trình và Nghiên cứu khoa học kỹ thuật.</p>
                 <div className="flex flex-wrap justify-center gap-3 mt-8">
