@@ -1,113 +1,193 @@
-# 🧪 STEM LAB BDQ — Hệ thống Quản lý & Học tập
-### THPT Bắc Đông Quan | Tài trợ bởi PetroVietnam
+# 🔬 STEM Lab – THPT Bắc Đông Quan
+
+Hệ thống quản lý phòng thực hành STEM dành cho trường THPT Bắc Đông Quan. Ứng dụng cho phép quản lý thiết bị, lịch mượn đồ, nhật ký phòng lab, bài đăng thông báo và phân quyền người dùng.
 
 ---
 
-## 📁 Cấu trúc thư mục
+## 🖥️ Demo
+
+Chạy cục bộ tại: `http://localhost:3000`
+
+---
+
+## ✨ Tính năng chính
+
+| Tính năng | Mô tả |
+|---|---|
+| 🔐 Xác thực | Đăng ký / Đăng nhập qua Supabase Auth |
+| 🧰 Kho thiết bị | Thêm, sửa, xoá, tìm kiếm thiết bị; xem trạng thái (tốt / hỏng / đang mượn) |
+| 📦 Mượn thiết bị | Đặt lịch mượn, trả thiết bị, theo dõi lịch sử mượn |
+| 📅 Lịch hoạt động | Quản lý lịch sử dụng phòng lab theo buổi / ngày |
+| 📓 Nhật ký | Ghi chép nhật ký phòng lab theo từng buổi học |
+| 📢 Bài đăng | Tạo và xem thông báo từ giáo viên / quản trị |
+| 🗒️ Vật tư tiêu hao | Quản lý vật tư (hoá chất, linh kiện, …) |
+| 📊 Báo cáo sự cố | Ghi nhận và xử lý sự cố thiết bị |
+| 👑 Bảng quản trị | Quản lý người dùng, phân quyền, xem thống kê tổng quan |
+| 📬 Thông báo Telegram | Gửi thông báo tới nhóm Telegram qua Bot |
+
+---
+
+## 🗂️ Cấu trúc thư mục
 
 ```
-stem-lab/
+stem-lab-management-website/
+├── app/
+│   ├── page.tsx           # Entry point – state, routing, data fetching
+│   ├── layout.tsx         # Root layout, metadata
+│   └── globals.css        # Global styles
 │
-├── index.html                  ← File HTML chính (giao diện + cấu trúc)
+├── components/
+│   ├── layout/
+│   │   ├── app-header.tsx # Thanh điều hướng chính (desktop + mobile)
+│   │   └── app-footer.tsx # Footer toàn trang
+│   │
+│   ├── features/          # Các tab nội dung chính
+│   │   ├── home-tab.tsx
+│   │   ├── devices-tab.tsx
+│   │   ├── borrow-tab.tsx
+│   │   ├── schedules-tab.tsx
+│   │   ├── journal-tab.tsx
+│   │   ├── posts-tab.tsx
+│   │   ├── materials-tab.tsx
+│   │   ├── reports-tab.tsx
+│   │   └── admin-tab.tsx
+│   │
+│   ├── modals/            # Các hộp thoại (dialog)
+│   │   ├── auth-modal.tsx
+│   │   ├── device-modal.tsx
+│   │   ├── borrow-modal.tsx (tuỳ chỉnh trong tab)
+│   │   ├── journal-modal.tsx
+│   │   ├── material-modal.tsx
+│   │   ├── post-modal.tsx
+│   │   ├── full-post-modal.tsx
+│   │   ├── report-modal.tsx
+│   │   ├── schedule-modal.tsx
+│   │   └── telegram-modal.tsx
+│   │
+│   └── ui/                # Thành phần giao diện dùng chung
+│       ├── dialog.tsx
+│       └── badges.tsx
 │
-├── assets/
-│   ├── css/
-│   │   └── styles.css          ← CSS tùy chỉnh (font, scrollbar, animation)
-│   └── images/
-│       ├── logo-bdq.jpg        ← Logo trường (tự thêm vào)
-│       └── logo-pvn.png        ← Logo PetroVietnam (tự thêm vào)
+├── lib/
+│   ├── supabase.ts        # Khởi tạo Supabase client
+│   ├── types.ts           # TypeScript types dùng chung
+│   ├── services/
+│   │   └── stem-lab.ts    # Data access layer (CRUD Supabase)
+│   ├── models/            # Kiểu dữ liệu theo từng model
+│   ├── constants/         # Hằng số toàn ứng dụng
+│   └── utils/             # Hàm tiện ích
 │
-└── js/                         ← Các module JavaScript
-    ├── data.js                 ← [MODULE 1] Dữ liệu mẫu ban đầu
-    ├── utils.js                ← [MODULE 2] Tiện ích (showDialog, closeDialog)
-    ├── auth.js                 ← [MODULE 3] Xác thực (login, register, logout)
-    ├── devices.js              ← [MODULE 4] Kho thiết bị (CRUD)
-    ├── schedules.js            ← [MODULE 5] Lịch học & hoạt động
-    ├── materials.js            ← [MODULE 6] Thư viện tài liệu số
-    ├── posts.js                ← [MODULE 7] Tin tức & bài viết
-    ├── borrow.js               ← [MODULE 8] Mượn / trả thiết bị
-    ├── admin.js                ← [MODULE 9] Quản lý tài khoản (Admin)
-    └── app.js                  ← [MODULE 10] Lõi ứng dụng (LOAD CUỐI CÙNG)
+├── supabase-schema.sql        # Script tạo toàn bộ bảng & RLS
+├── supabase-policies-fix.sql  # Script fix RLS policies
+├── supabase-trigger-fix.sql   # Trigger tự động tạo user_profile
+├── .env.local                 # Biến môi trường (KHÔNG commit)
+├── package.json
+└── tailwind.config.ts
 ```
 
 ---
 
-## 🚀 Hướng dẫn sử dụng
+## 🛠️ Công nghệ sử dụng
 
-### Mở trực tiếp trên trình duyệt
-1. Giải nén file zip
-2. Mở `index.html` bằng trình duyệt Chrome / Edge / Firefox
-3. ⚠️ Lưu ý: Một số trình duyệt chặn load file JS cục bộ (CORS). Nếu bị lỗi, dùng cách bên dưới.
+| Công nghệ | Phiên bản | Mục đích |
+|---|---|---|
+| [Next.js](https://nextjs.org/) | ^16.0 | React framework – SSR/CSR |
+| [React](https://react.dev/) | ^18 | UI library |
+| [TypeScript](https://www.typescriptlang.org/) | ^5 | Type safety |
+| [Tailwind CSS](https://tailwindcss.com/) | ^3.4 | Utility-first styling |
+| [Supabase](https://supabase.com/) | ^2.45 | Database, Auth, Realtime |
+| [Lucide React](https://lucide.dev/) | ^0.453 | Icon library |
 
-### Dùng local server (khuyên dùng)
+---
+
+## ⚙️ Cài đặt & Chạy cục bộ
+
+### Yêu cầu hệ thống
+- Node.js ≥ 18
+- npm hoặc yarn
+- Tài khoản Supabase
+
+### 1. Clone & cài đặt dependencies
+
 ```bash
-# Nếu có Python:
-cd stem-lab
-python -m http.server 8000
-# Mở: http://localhost:8000
-
-# Nếu có Node.js:
-npx serve .
+git clone <repo-url>
+cd stem-lab-management-website
+npm install
 ```
 
-### Tài khoản test
-| Tài khoản | Mật khẩu | Vai trò |
-|-----------|----------|---------|
-| `admin` | `admin123` | Quản trị viên |
-| `0987654321` | `123456` | Học sinh |
-| `hocsinh2@gmail.com` | `123456` | Học sinh |
+### 2. Cấu hình biến môi trường
 
----
+Tạo file `.env.local` tại thư mục gốc:
 
-## 🧩 Mô tả từng Module
-
-| File | Chức năng | Hàm chính |
-|------|-----------|-----------|
-| `data.js` | Dữ liệu mẫu (devices, users, posts...) | Biến toàn cục |
-| `utils.js` | Dialog thông báo hệ thống | `showDialog()`, `closeDialog()` |
-| `auth.js` | Đăng nhập / Đăng ký / Đăng xuất | `handleAuthSubmit()`, `logout()` |
-| `devices.js` | Kho thiết bị — Hiển thị, tìm kiếm, thêm/sửa/xóa | `renderDevices()`, `handleDeviceSubmit()` |
-| `schedules.js` | Lịch hoạt động CLB | `renderSchedules()`, `handleScheduleSubmit()` |
-| `materials.js` | Thư viện video/PDF/hướng dẫn | `renderMaterials()`, `filterMaterials()` |
-| `posts.js` | Tin tức & bài viết | `renderPosts()`, `openFullPost()` |
-| `borrow.js` | Phiếu mượn/trả thiết bị (User + Admin) | `handleBorrowSubmit()`, `approveLoan()` |
-| `admin.js` | Quản lý tài khoản học sinh | `renderAdminUsers()`, `resetUserPassword()` |
-| `app.js` | Điều hướng tab, thống kê, dark mode | `switchTab()`, `updateStats()`, `window.onload` |
-
----
-
-## 🔧 Nâng cấp & Mở rộng
-
-### Kết nối Backend/Database
-Thay thế dữ liệu trong `js/data.js` bằng API call:
-```javascript
-// Ví dụ: Fetch dữ liệu từ API
-async function loadDevices() {
-    const res = await fetch('https://your-api.com/devices');
-    devices = await res.json();
-    renderDevices();
-}
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-### Thêm module mới
-1. Tạo file `js/ten-module-moi.js`
-2. Thêm `<script src="js/ten-module-moi.js"></script>` vào `index.html` **trước** `app.js`
+### 3. Tạo Database
 
-### Thêm tab mới
-1. Thêm HTML section vào `index.html` với id `tab-ten-tab`
-2. Thêm nút điều hướng vào `<nav>` trong header
-3. Thêm `'ten-tab'` vào mảng `ALL_TABS` trong `js/app.js`
+Trong **Supabase Dashboard → SQL Editor**, chạy lần lượt:
+
+```
+1. supabase-schema.sql          # Tạo bảng và RLS
+2. supabase-policies-fix.sql    # Cập nhật policy
+3. supabase-trigger-fix.sql     # Trigger tự tạo user_profile
+```
+
+### 4. Chạy ứng dụng
+
+```bash
+npm run dev
+```
+
+Mở trình duyệt tại: **`http://localhost:3000`**
 
 ---
 
-## 📦 Công nghệ sử dụng
+## 🔐 Phân quyền người dùng
 
-- **HTML5 + CSS3** — Cấu trúc giao diện
-- **Tailwind CSS** (CDN) — Styling
-- **Lucide Icons** (CDN) — Icon set
-- **Google Fonts** — Plus Jakarta Sans
-- **Vanilla JavaScript** — Không dùng framework, dễ học, dễ nâng cấp
+| Vai trò | Quyền hạn |
+|---|---|
+| `student` | Xem thiết bị, đặt lịch mượn, ghi báo cáo |
+| `teacher` | Tạo bài đăng, ghi nhật ký, quản lý lịch |
+| `admin` | Toàn quyền – quản lý người dùng, thiết bị, thống kê |
 
 ---
 
-*Thiết kế bởi: Phạm Công Vinh | © 2026 STEM LAB Bắc Đông Quan*
+## 📋 Database Schema (tóm tắt)
+
+| Bảng | Mô tả |
+|---|---|
+| `user_profiles` | Thông tin người dùng (tên, lớp, vai trò, SĐT) |
+| `devices` | Danh mục thiết bị phòng lab |
+| `loan_records` | Phiếu mượn trả thiết bị |
+| `schedules` | Lịch sử dụng phòng lab |
+| `journal_entries` | Nhật ký phòng lab |
+| `posts` | Bài đăng thông báo |
+| `materials` | Vật tư tiêu hao |
+| `incident_reports` | Báo cáo sự cố thiết bị |
+
+---
+
+## 📁 Changelog
+
+Xem lịch sử thay đổi chi tiết trong thư mục [`changelog/`](./changelog/).
+
+| Phiên bản | Ngày | Mô tả |
+|---|---|---|
+| [v1.0](./changelog/v1.0.md) | 2026-06-10 | Khởi tạo dự án, tích hợp Supabase |
+| [v1.1](./changelog/v1.1.md) | 2026-06-13 | Sửa lỗi hiển thị chữ tràn khung, cân chỉnh typography |
+| [v2.0](./changelog/v2.0.md) | 2026-06-18 | Tái cấu trúc toàn bộ – modular components, UI Glassmorphism |
+| [v2.1](./changelog/v2.1.md) | 2026-06-18 | Fix lỗi đăng ký tài khoản không ghi vào Supabase |
+
+---
+
+## 👤 Tác giả
+
+Dự án phát triển cho **Phòng STEM Lab – THPT Bắc Đông Quan**
+
+---
+
+## 📜 Giấy phép
+
+Dự án nội bộ – chỉ dùng trong phạm vi nhà trường.
