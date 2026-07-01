@@ -1,18 +1,15 @@
 'use client'
 
-import { Shield, Send, Bell, PackageMinus, TriangleAlert, Users2, ClipboardList, Zap, PlusCircle, CalendarDays, NotebookPen, PenTool } from 'lucide-react'
-import { ReportStatusBadge, SeverityBadge } from '@/components/ui/badges'
-import type { Loan, DeviceReport, UserProfile, Tab, Device } from '@/lib/types'
-import { formatDate } from '@/lib/utils/date'
+import { Shield, Send, Bell, PackageMinus, TriangleAlert, ClipboardList, Zap, PlusCircle, CalendarDays, NotebookPen, PenTool } from 'lucide-react'
+import { SeverityBadge } from '@/components/ui/badges'
+import type { Loan, DeviceReport, Tab, Device } from '@/lib/types'
 
 interface AdminTabProps {
   pendingLoans: number
   activeLoans: number
   pendingReports: number
-  allProfilesCount: number
   loans: Loan[]
   reports: DeviceReport[]
-  allProfiles: UserProfile[]
   setTgModalOpen: (val: boolean) => void
   approveLoan: (id: string) => void
   rejectLoan: (id: string) => void
@@ -30,10 +27,8 @@ export function AdminTab({
   pendingLoans,
   activeLoans,
   pendingReports,
-  allProfilesCount,
   loans,
   reports,
-  allProfiles,
   setTgModalOpen,
   approveLoan,
   rejectLoan,
@@ -67,7 +62,7 @@ export function AdminTab({
       </div>
 
       {/* Admin Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         {[
           {
             val: pendingLoans,
@@ -98,16 +93,6 @@ export function AdminTab({
             textLbl: 'text-amber-600',
             iconBg: 'bg-amber-100 text-amber-700',
             icon: <TriangleAlert className="w-5 h-5" />,
-          },
-          {
-            val: allProfilesCount,
-            label: 'Tài khoản học sinh',
-            bg: 'bg-blue-50/50',
-            border: 'border-blue-200/60',
-            textVal: 'text-blue-950',
-            textLbl: 'text-blue-600',
-            iconBg: 'bg-blue-100 text-blue-700',
-            icon: <Users2 className="w-5 h-5" />,
           },
         ].map((s) => (
           <div
@@ -259,62 +244,7 @@ export function AdminTab({
         </div>
       </div>
 
-      {/* Users Accounts Control */}
-      <div className="bg-white/80 border-2 border-rose-100/80 rounded-3xl overflow-hidden shadow-sm p-6 relative space-y-4 backdrop-blur-sm">
-        <div className="absolute top-0 right-0 bg-rose-500 text-white text-[9px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-widest">
-          Quyền Admin
-        </div>
-        <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-          <Users2 className="text-rose-600 w-5 h-5" />
-          Quản Lý Tài Khoản Học Sinh
-        </h3>
-        <div className="overflow-x-auto border border-slate-200/80 rounded-2xl">
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="bg-slate-50/80 text-slate-600 border-b border-slate-200/80 font-bold text-[10px] uppercase tracking-wider">
-                <th className="py-3.5 px-4">UID</th>
-                <th className="py-3.5 px-4">Họ và Tên</th>
-                <th className="py-3.5 px-4">Lớp</th>
-                <th className="py-3.5 px-4">Ngày sinh</th>
-                <th className="py-3.5 px-4">Số điện thoại</th>
-                <th className="py-3.5 px-4 text-center">Vai trò</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allProfiles.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-6 text-center text-slate-400 font-medium">
-                    Chưa có học sinh nào đăng ký tài khoản.
-                  </td>
-                </tr>
-              ) : (
-                allProfiles.map((u) => (
-                  <tr key={u.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition">
-                    <td className="py-3 px-4 font-mono text-[11px] text-slate-400">...{u.id.slice(-8)}</td>
-                    <td className="py-3 px-4 font-bold text-slate-900">{u.name}</td>
-                    <td className="py-3 px-4 text-xs font-bold uppercase text-slate-600">{u.class_name || '-'}</td>
-                    <td className="py-3 px-4 text-xs text-slate-500">{u.dob ? formatDate(u.dob) : 'Chưa cập nhật'}</td>
-                    <td className="py-3 px-4 text-xs text-slate-500 font-semibold">{u.phone || '-'}</td>
-                    <td className="py-3 px-4 text-center">
-                      <span
-                        className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase ${
-                          u.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-emerald-100 text-emerald-700'
-                        }`}
-                      >
-                        {u.role}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-        <p className="text-[11px] text-slate-400 font-medium">
-          💡 Chú ý: Để xóa tài khoản hoặc đổi mật khẩu học sinh, vui lòng quản lý trực tiếp tại bảng điều khiển của{' '}
-          <strong>Supabase Dashboard → Authentication → Users</strong>.
-        </p>
-      </div>
+
 
       {/* Quick Action Buttons */}
       <div className="bg-white/80 p-6 rounded-3xl border border-slate-200/80 shadow-sm backdrop-blur-sm">

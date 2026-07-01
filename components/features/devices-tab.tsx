@@ -115,7 +115,7 @@ export function DevicesTab({
               <div className="p-5 flex-1 flex flex-col justify-between">
                 <div className="space-y-3">
                   <div>
-                    <h3 className="font-extrabold text-slate-900 text-sm leading-tight group-hover:text-stemBlue-600 transition-colors line-clamp-2 min-h-[40px]">
+                    <h3 className="font-extrabold text-slate-900 text-sm leading-snug group-hover:text-stemBlue-600 transition-colors line-clamp-2 min-h-[40px]">
                       {dev.name}
                     </h3>
                     <p className="text-[11px] text-slate-400 font-mono mt-1 font-semibold">Mã: {dev.code}</p>

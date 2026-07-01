@@ -179,6 +179,8 @@ Xem lịch sử thay đổi chi tiết trong thư mục [`changelog/`](./changel
 | [v1.1](./changelog/v1.1.md) | 2026-06-13 | Sửa lỗi hiển thị chữ tràn khung, cân chỉnh typography |
 | [v2.0](./changelog/v2.0.md) | 2026-06-18 | Tái cấu trúc toàn bộ – modular components, UI Glassmorphism |
 | [v2.1](./changelog/v2.1.md) | 2026-06-18 | Fix lỗi đăng ký tài khoản không ghi vào Supabase |
+| [v3.0](./changelog/v3.0.md) | 2026-06-25 | Font tiếng Việt, nhật ký phân quyền, lịch nâng cấp |
+| [v3.1](./changelog/v3.1.md) | 2026-07-01 | Gộp Trang cá nhân, nâng cấp Header 1 dòng, bỏ Dark Mode |
 
 ---
 

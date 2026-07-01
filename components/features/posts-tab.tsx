@@ -106,12 +106,12 @@ export function PostsTab({
               Câu lạc bộ STEM thường xuyên cập nhật kết quả nghiên cứu và thông tin tuyển sinh thành viên năng động tại Fanpage chính thức.
             </p>
             <a
-              href="https://facebook.com"
+              href="https://www.fablabs.io/labs/bdqstemlab"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-white text-indigo-950 font-extrabold text-xs px-5 py-3 rounded-2xl shadow hover:bg-slate-100 transition-all"
             >
-              Fanpage Facebook CLB
+              Trang Fab Labs <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </div>
         </div>

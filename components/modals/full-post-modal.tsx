@@ -40,7 +40,7 @@ export function FullPostModal({ post, onClose }: FullPostModalProps) {
               className="w-full h-56 object-cover rounded-2xl shadow-sm border border-slate-100"
             />
           )}
-          <h2 className="text-2xl font-black text-slate-900 leading-tight">
+          <h2 className="text-2xl font-black text-slate-900 leading-snug">
             {post.title}
           </h2>
           <div className="flex items-center gap-2 text-xs text-slate-400 font-semibold">

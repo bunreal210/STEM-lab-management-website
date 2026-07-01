@@ -8,3 +8,4 @@ export type Tab =
   | 'nhat-ky'
   | 'bao-hong'
   | 'admin-panel'
+  | 'trang-ca-nhan'

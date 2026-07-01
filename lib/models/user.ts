@@ -3,7 +3,7 @@ export interface UserProfile {
   name: string | null
   class_name: string | null
   dob: string | null
-  role: 'admin' | 'student'
+  role: 'admin' | 'teacher' | 'student'
   phone: string | null
   created_at: string
 }

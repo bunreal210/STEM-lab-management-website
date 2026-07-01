@@ -40,4 +40,13 @@ export interface JournalEntry {
   participants: number
   status: string
   created_at: string
+  // v3.0 — Nhật ký phân quyền theo vai trò
+  journal_role: string | null   // 'hoc-sinh' | 'giao-vien' | 'quan-tri'
+  author_id: string | null
+  subject: string | null
+  room_condition: string | null
+  equipment_notes: string | null
+  rating: number | null
+  target_class: string | null
 }
+

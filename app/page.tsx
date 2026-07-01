@@ -16,6 +16,7 @@ import { JournalTab } from '@/components/features/journal-tab'
 import { BorrowTab } from '@/components/features/borrow-tab'
 import { ReportsTab } from '@/components/features/reports-tab'
 import { AdminTab } from '@/components/features/admin-tab'
+import { ProfileTab } from '@/components/features/profile-tab'
 
 // Modal components
 import { AuthModal } from '@/components/modals/auth-modal'
@@ -30,7 +31,7 @@ import { TelegramModal } from '@/components/modals/telegram-modal'
 
 import {
   Zap, Moon, Sun, Menu, X, ArrowLeftRight, TriangleAlert, Settings, LogOut,
-  Shield, Send, Bell, PackageMinus, Users2
+  Shield, Send, Bell, PackageMinus, UserRound
 } from 'lucide-react'
 
 export default function App() {
@@ -46,12 +47,10 @@ export default function App() {
   const [loans, setLoans]             = useState<Loan[]>([])
   const [journal, setJournal]         = useState<JournalEntry[]>([])
   const [reports, setReports]         = useState<DeviceReport[]>([])
-  const [allProfiles, setAllProfiles] = useState<UserProfile[]>([])
 
   // ── UI state
   const [tab, setTab]                 = useState<Tab>('trang-chu')
   const [mobileOpen, setMobileOpen]   = useState(false)
-  const [darkMode, setDarkMode]       = useState(false)
   const [dialog, setDialog]           = useState<{ title: string; msg: string; ok: boolean } | null>(null)
   const [loading, setLoading]         = useState(true)
 
@@ -59,7 +58,7 @@ export default function App() {
   const [deviceSearch, setDeviceSearch] = useState('')
   const [deviceCat, setDeviceCat]       = useState('all')
   const [matFilter, setMatFilter]       = useState('all')
-  const [jnFilter, setJnFilter]         = useState('all')
+  const [journalTab, setJournalTab]     = useState<'hoc-sinh' | 'giao-vien' | 'quan-tri'>('hoc-sinh')
 
   // ── Modal state
   const [authMode, setAuthMode]         = useState<'login' | 'register'>('login')
@@ -81,10 +80,8 @@ export default function App() {
 
   // ─── Init ────────────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (localStorage.getItem('darkMode') === 'true') {
-      setDarkMode(true)
-      document.documentElement.classList.add('dark')
-    }
+    document.documentElement.classList.remove('dark')
+    localStorage.removeItem('darkMode')
     setTgToken(localStorage.getItem('tg_bot_token') || '')
     setTgChatId(localStorage.getItem('tg_chat_id') || '')
     setTgEnabled(localStorage.getItem('tg_enabled') === 'true')
@@ -132,15 +129,23 @@ export default function App() {
     if (repRes.data) setReports(repRes.data)
   }
 
+  const updateProfile = async (name: string, class_name: string, phone: string, dob: string) => {
+    if (!authUser) return
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ name, class_name, phone, dob: dob || null })
+      .eq('id', authUser.id)
+    if (error) throw error
+    await loadUserData(authUser.id)
+  }
+
   const loadAdminData = useCallback(async () => {
-    const [loansRes, repRes, profRes] = await Promise.all([
+    const [loansRes, repRes] = await Promise.all([
       supabase.from('loans').select('*').order('created_at', { ascending: false }),
       supabase.from('device_reports').select('*').order('created_at', { ascending: false }),
-      supabase.from('user_profiles').select('*').order('created_at'),
     ])
     if (loansRes.data) setLoans(loansRes.data)
     if (repRes.data)   setReports(repRes.data)
-    if (profRes.data)  setAllProfiles(profRes.data)
   }, [])
 
   const isAdmin = profile?.role === 'admin'
@@ -153,16 +158,9 @@ export default function App() {
     setTab(t)
     setMobileOpen(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    if (t === 'admin-panel' && isAdmin) loadAdminData()
+    if (t === 'trang-ca-nhan' && (isAdmin || profile?.role === 'teacher')) loadAdminData()
   }
 
-  // ── Dark mode ────────────────────────────────────────────────────────────────
-  function toggleDark() {
-    const next = !darkMode
-    setDarkMode(next)
-    document.documentElement.classList.toggle('dark', next)
-    localStorage.setItem('darkMode', String(next))
-  }
 
   // ── Telegram ─────────────────────────────────────────────────────────────────
   async function sendTelegram(text: string) {
@@ -395,22 +393,34 @@ export default function App() {
     loadAdminData(); loadPublicData()
   }
 
-  // ─── JOURNAL ─────────────────────────────────────────────────────────────────
+  // ─── JOURNAL (v3.0 — phân quyền theo vai trò) ──────────────────────────────
   async function handleJournalSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
-    const entry = {
-      date: fd.get('date') as string, time_of_day: fd.get('time') as string,
-      type: fd.get('type') as string, title: fd.get('title') as string,
-      content: fd.get('content') as string, author: profile?.name || 'Admin',
+    const journalRole = fd.get('journal_role') as string || journalTab
+    const entry: Record<string, unknown> = {
+      date: fd.get('date') as string,
+      time_of_day: fd.get('time') as string,
+      type: journalRole === 'hoc-sinh' ? 'Buổi học' : journalRole === 'giao-vien' ? 'Đánh giá' : 'Kiểm kê',
+      title: fd.get('title') as string,
+      content: fd.get('content') as string,
+      author: profile?.name || 'Unknown',
+      author_id: authUser?.id || null,
       participants: parseInt(fd.get('participants') as string) || 0,
-      status: fd.get('status') as string,
+      status: 'Hoàn thành',
+      journal_role: journalRole,
+      subject: (fd.get('subject') as string) || null,
+      room_condition: (fd.get('room_condition') as string) || null,
+      equipment_notes: (fd.get('equipment_notes') as string) || null,
+      rating: fd.get('rating') ? parseInt(fd.get('rating') as string) : null,
+      target_class: (fd.get('target_class') as string) || null,
     }
     const { error } = await supabase.from('journal_entries').insert(entry)
     if (error) { showDialog('Lỗi', error.message, false); return }
     setJournalModalOpen(false)
     showDialog('Đã ghi nhật ký', 'Nhật ký hoạt động đã được lưu thành công.')
-    sendTelegram(`📓 <b>Nhật ký Lab mới</b>\n📅 ${entry.date} ${entry.time_of_day}\n🏷️ ${entry.type}: ${entry.title}\n👥 ${entry.participants} người tham gia`)
+    const roleLabel = journalRole === 'hoc-sinh' ? 'Học sinh' : journalRole === 'giao-vien' ? 'Giáo viên' : 'Quản trị'
+    sendTelegram(`📓 <b>Nhật ký Lab mới (${roleLabel})</b>\n📅 ${entry.date}\n🏷️ ${entry.title}\n✍️ ${entry.author}`)
     loadPublicData()
   }
 
@@ -454,8 +464,6 @@ export default function App() {
   const pendingLoans  = loans.filter(l => l.status === 'Chờ duyệt').length
   const activeLoans   = loans.filter(l => l.status === 'Đang mượn').length
   const pendingReports = reports.filter(r => r.status !== 'Đã xử lý').length
-  const jnThisMonth   = journal.filter(e => e.date.startsWith(new Date().toISOString().slice(0,7))).length
-  const jnParticipants = journal.reduce((s, e) => s + (e.participants || 0), 0)
 
   const filteredDevices = devices.filter(d => {
     const matchSearch = d.name.toLowerCase().includes(deviceSearch.toLowerCase()) || d.code.toLowerCase().includes(deviceSearch.toLowerCase())
@@ -463,7 +471,6 @@ export default function App() {
     return matchSearch && matchCat
   })
   const filteredMaterials = matFilter === 'all' ? materials : materials.filter(m => m.type === matFilter)
-  const filteredJournal   = jnFilter  === 'all' ? journal   : journal.filter(e => e.type === jnFilter)
   const myLoans   = loans.filter(l => l.user_id === authUser?.id)
   const myReports = reports.filter(r => r.reporter_id === authUser?.id)
 
@@ -484,93 +491,88 @@ export default function App() {
       </div>
 
       {/* ── HEADER ── */}
-      <header className="bg-white/85 backdrop-blur-lg border-b border-slate-200/60 sticky top-0 z-40 shadow-sm transition">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[72px] flex items-center justify-between">
+      {/* ── HEADER ── */}
+      <header className="bg-white/95 backdrop-blur-lg border-b border-slate-200/60 sticky top-0 z-40 shadow-sm transition">
+        <div className="w-full px-4 md:px-8 h-[76px] flex flex-nowrap items-center justify-between gap-4 overflow-hidden">
           
           {/* Logo */}
-          <div className="flex items-center gap-2 md:gap-5 cursor-pointer" onClick={() => switchTab('trang-chu')}>
-            <div className="flex items-center gap-1.5 md:gap-3 border-r border-slate-200 pr-2 md:pr-5">
-              <div className="w-9 h-9 md:w-11 md:h-11 bg-white rounded-xl shadow-sm border border-slate-100 p-0.5">
+          <div className="flex flex-shrink-0 items-center gap-2 md:gap-4 cursor-pointer" onClick={() => switchTab('trang-chu')}>
+            <div className="flex items-center gap-1 md:gap-2.5 border-r border-slate-200 pr-2 md:pr-4">
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-xl shadow-sm border border-slate-100 p-0.5">
                 <img src="/assets/images/logo-bdq.jpg" alt="BDQ" className="w-full h-full object-contain" onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
               </div>
-              <div className="w-9 h-9 md:w-11 md:h-11 bg-white rounded-xl shadow-sm border border-slate-100 p-0.5">
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-xl shadow-sm border border-slate-100 p-0.5">
                 <img src="/assets/images/logo-pvn.png" alt="PVN" className="w-full h-full object-contain" onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
               </div>
             </div>
-            <div className="leading-tight">
-              <h1 className="font-black text-sm md:text-lg text-indigo-950 tracking-tight">STEM LABORATORY</h1>
-              <div className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase tracking-widest">THPT Bắc Đông Quan</div>
+            <div>
+              <h1 className="font-black text-xs md:text-base text-indigo-950 tracking-tight leading-tight whitespace-nowrap">STEM LABORATORY</h1>
+              <div className="text-[9px] md:text-[11px] font-bold text-slate-500 tracking-wide leading-relaxed pt-0.5 whitespace-nowrap">THPT BẮC ĐÔNG QUAN</div>
             </div>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden xl:flex items-center gap-1">
+          <nav className="hidden lg:flex flex-nowrap items-center gap-1 xl:gap-2 flex-shrink min-w-0 overflow-x-auto scrollbar-none">
             {([
               ['trang-chu','Trang chủ'],['co-so-vat-chat','Kho Thiết bị'],
               ['lich-hoc','Lịch hoạt động'],['kho-tai-lieu','Thư viện số'],
               ['truyen-thong','Tin tức'],['nhat-ky','Nhật ký Lab'],
             ] as [Tab, string][]).map(([t, label]) => (
               <button key={t} onClick={() => switchTab(t)}
-                className={`px-3 py-2 rounded-xl text-sm font-bold transition-all ${tab===t ? 'text-stemBlue-700 bg-stemBlue-50/80 border border-stemBlue-100' : 'text-slate-600 border border-transparent hover:bg-slate-50'}`}>
+                className={`px-2.5 py-1.5 xl:px-4 xl:py-2 rounded-xl text-sm xl:text-base font-bold transition-all whitespace-nowrap ${tab===t ? 'text-stemBlue-700 bg-stemBlue-50 border border-stemBlue-100' : 'text-slate-600 border border-transparent hover:bg-slate-50'}`}>
                 {label}
               </button>
             ))}
-            {authUser && <>
+            {authUser && !isAdmin && <>
               <button onClick={() => switchTab('muon-tra')}
-                className={`px-3 py-2 rounded-xl text-sm font-bold border transition-all ${tab==='muon-tra' ? 'bg-stemBlue-50 text-stemBlue-700 border-stemBlue-200' : 'bg-white/50 border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+                className={`px-2.5 py-1.5 xl:px-4 xl:py-2 rounded-xl text-sm xl:text-base font-bold border transition-all whitespace-nowrap ${tab==='muon-tra' ? 'bg-stemBlue-50 text-stemBlue-700 border-stemBlue-200' : 'bg-white/50 border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
                 Mượn thiết bị
               </button>
               <button onClick={() => switchTab('bao-hong')}
-                className={`px-3 py-2 rounded-xl text-sm font-bold border flex items-center gap-1.5 transition-all ${tab==='bao-hong' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white/50 border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+                className={`px-2.5 py-1.5 xl:px-4 xl:py-2 rounded-xl text-sm xl:text-base font-bold border flex items-center gap-1.5 transition-all whitespace-nowrap ${tab==='bao-hong' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white/50 border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
                 <TriangleAlert className="w-4 h-4 text-amber-500" /> Báo lỗi
               </button>
             </>}
           </nav>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-2">
-            <button onClick={toggleDark} className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 transition-all">
-              {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
-            
-            {isAdmin && (
-              <button onClick={() => switchTab('admin-panel')}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-xl text-xs md:text-sm font-black flex items-center gap-1.5 shadow-md">
-                <Settings className="w-4 h-4" /> Quản trị
-              </button>
-            )}
-
+          <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
             {!authUser ? (
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 flex-shrink-0">
                 <button onClick={() => { setAuthMode('login'); setAuthOpen(true) }}
-                  className="text-slate-600 hover:text-indigo-600 px-3 py-2 text-sm font-bold transition">Đăng nhập</button>
+                  className="text-slate-600 hover:text-indigo-600 px-2 py-1.5 text-xs xl:text-sm font-bold transition whitespace-nowrap">Đăng nhập</button>
                 <button onClick={() => { setAuthMode('register'); setAuthOpen(true) }}
-                  className="hidden sm:inline-block bg-stemBlue-600 hover:bg-stemBlue-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition">Đăng ký</button>
+                  className="hidden sm:inline-block bg-stemBlue-600 hover:bg-stemBlue-700 text-white px-3 py-1.5 rounded-xl text-xs xl:text-sm font-bold shadow-sm transition whitespace-nowrap">Đăng ký</button>
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 bg-slate-100 border border-slate-200/50 py-1.5 px-3.5 rounded-full shadow-inner">
-                  <div className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={() => switchTab('trang-ca-nhan')}
+                  className={`flex items-center gap-2.5 px-3 py-2 md:px-4 md:py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap border ${
+                    tab === 'trang-ca-nhan'
+                      ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-inner'
+                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'
+                  }`}
+                >
+                  <div className="w-5.5 h-5.5 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0">
                     {profile?.name?.charAt(0).toUpperCase() || 'U'}
                   </div>
-                  <div className="hidden sm:block">
-                    <p className="text-xs font-black text-slate-800 leading-none truncate max-w-[100px]">{profile?.name || 'User'}</p>
-                  </div>
-                </div>
-                <button onClick={handleLogout} className="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition" title="Đăng xuất">
-                  <LogOut className="w-5 h-5" />
+                  <span className="text-xs md:text-sm">Trang cá nhân</span>
+                </button>
+                <button onClick={handleLogout} className="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition shrink-0" title="Đăng xuất">
+                  <LogOut className="w-4 h-4" />
                 </button>
               </div>
             )}
-            <button onClick={() => setMobileOpen(!mobileOpen)} className="xl:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition">
-              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            <button onClick={() => setMobileOpen(!mobileOpen)} className="lg:hidden p-1.5 text-slate-600 hover:bg-slate-100 rounded-xl transition flex-shrink-0">
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
         {/* Mobile Navigation Menu */}
         {mobileOpen && (
-          <div className="xl:hidden border-t border-slate-100 bg-white/95 backdrop-blur-md px-4 py-3 space-y-1 shadow-lg animate-fade-in">
+          <div className="lg:hidden border-t border-slate-100 bg-white/95 backdrop-blur-md px-4 py-3 space-y-1 shadow-lg animate-fade-in">
             {([['trang-chu','Trang chủ'],['co-so-vat-chat','Kho Thiết bị'],['lich-hoc','Lịch hoạt động'],['kho-tai-lieu','Thư viện số'],['truyen-thong','Tin tức'],['nhat-ky','Nhật ký Lab']] as [Tab,string][]).map(([t,label]) => (
               <button key={t} onClick={() => switchTab(t)}
                 className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 ${tab === t ? 'bg-indigo-50/50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'}`}>
@@ -597,7 +599,7 @@ export default function App() {
             devicesCount={devices.length}
             schedulesCount={schedules.length}
             materialsCount={materials.length}
-            profilesCount={allProfiles.length}
+            profilesCount={0}
             switchTab={switchTab}
             authUser={authUser}
             setAuthOpen={setAuthOpen}
@@ -657,14 +659,13 @@ export default function App() {
         {tab === 'nhat-ky' && (
           <JournalTab
             journal={journal}
-            filteredJournal={filteredJournal}
-            jnThisMonth={jnThisMonth}
-            jnParticipants={jnParticipants}
-            jnFilter={jnFilter}
-            setJnFilter={setJnFilter}
             isAdmin={isAdmin}
+            profile={profile}
+            authUser={authUser}
             setJournalModalOpen={setJournalModalOpen}
             deleteJournal={deleteJournal}
+            activeJournalTab={journalTab}
+            setActiveJournalTab={setJournalTab}
           />
         )}
 
@@ -686,15 +687,17 @@ export default function App() {
           />
         )}
 
-        {tab === 'admin-panel' && isAdmin && (
-          <AdminTab
+        {tab === 'trang-ca-nhan' && (
+          <ProfileTab
+            profile={profile}
+            authUser={authUser}
+            loans={loans}
+            reports={reports}
+            journal={journal}
+            onUpdateProfile={updateProfile}
             pendingLoans={pendingLoans}
             activeLoans={activeLoans}
             pendingReports={pendingReports}
-            allProfilesCount={allProfiles.length}
-            loans={loans}
-            reports={reports}
-            allProfiles={allProfiles}
             setTgModalOpen={setTgModalOpen}
             approveLoan={approveLoan}
             rejectLoan={rejectLoan}
@@ -721,8 +724,8 @@ export default function App() {
             <div>
               <h3 className="text-sm font-bold text-slate-200 uppercase tracking-widest mb-4">Danh mục chính</h3>
               <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
-                {(['nhat-ky','bao-hong','co-so-vat-chat','kho-tai-lieu'] as Tab[]).map(t => (
-                  <button key={t} onClick={() => switchTab(t)} className="text-left hover:text-white transition-colors capitalize">{t}</button>
+                {([['co-so-vat-chat','Kho Thiết bị'],['lich-hoc','Lịch hoạt động'],['nhat-ky','Nhật ký Lab'],['kho-tai-lieu','Thư viện số'],['truyen-thong','Tin tức'],['bao-hong','Báo lỗi']] as [Tab, string][]).map(([t, label]) => (
+                  <button key={t} onClick={() => switchTab(t)} className="text-left hover:text-white transition-colors">{label}</button>
                 ))}
               </div>
             </div>
@@ -781,6 +784,8 @@ export default function App() {
         isOpen={journalModalOpen}
         onClose={() => setJournalModalOpen(false)}
         onSubmit={handleJournalSubmit}
+        userRole={profile?.role || 'student'}
+        activeJournalTab={journalTab}
       />
 
       <ReportModal

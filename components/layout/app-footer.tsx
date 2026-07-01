@@ -18,9 +18,16 @@ export function AppFooter({ onSwitchTab }: { onSwitchTab: (tab: Tab) => void }) 
           <div>
             <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-slate-200">Điều hướng</h3>
             <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
-              {(['nhat-ky', 'bao-hong', 'co-so-vat-chat', 'kho-tai-lieu'] as Tab[]).map((tab) => (
-                <button key={tab} onClick={() => onSwitchTab(tab)} className="text-left transition-colors hover:text-white">
-                  {tab.replace(/-/g, ' ')}
+              {([
+                ['co-so-vat-chat', 'Kho Thiết bị'],
+                ['lich-hoc', 'Lịch hoạt động'],
+                ['nhat-ky', 'Nhật ký Lab'],
+                ['kho-tai-lieu', 'Thư viện số'],
+                ['truyen-thong', 'Tin tức'],
+                ['bao-hong', 'Báo hỏng'],
+              ] as [Tab, string][]).map(([t, label]) => (
+                <button key={t} onClick={() => onSwitchTab(t)} className="text-left transition-colors hover:text-white">
+                  {label}
                 </button>
               ))}
             </div>
