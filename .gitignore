@@ -28,3 +28,7 @@ Thumbs.db
 dist
 coverage
 
+# Cloudflare
+.wrangler
+.dev.vars*
+!.dev.vars.example
