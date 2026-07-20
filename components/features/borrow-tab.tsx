@@ -1,6 +1,7 @@
 'use client'
 
-import { ClipboardEdit, Send, History } from 'lucide-react'
+import { useState } from 'react'
+import { ClipboardEdit, Send, History, Search } from 'lucide-react'
 import { LoanBadge } from '@/components/ui/badges'
 import type { Device, Loan, UserProfile } from '@/lib/types'
 
@@ -17,6 +18,15 @@ export function BorrowTab({
   myLoans,
   onSubmitBorrow,
 }: BorrowTabProps) {
+  const [deviceSearch, setDeviceSearch] = useState('')
+
+  const filteredDevices = devices.filter(
+    (d) =>
+      d.available > 0 &&
+      (d.name.toLowerCase().includes(deviceSearch.toLowerCase()) ||
+       d.code.toLowerCase().includes(deviceSearch.toLowerCase()))
+  )
+
   return (
     <section className="space-y-6 animate-fade-in">
       <div className="border-b border-slate-200 pb-5">
@@ -60,20 +70,33 @@ export function BorrowTab({
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Chọn thiết bị</label>
+                <div className="relative mb-2">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-slate-400" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Tìm theo tên hoặc mã thiết bị..."
+                    value={deviceSearch}
+                    onChange={(e) => setDeviceSearch(e.target.value)}
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-stemBlue-500 transition"
+                  />
+                </div>
                 <select
                   name="device_id"
                   required
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-stemBlue-500 transition cursor-pointer"
                 >
                   <option value="">-- Chọn thiết bị trong kho --</option>
-                  {devices
-                    .filter((d) => d.available > 0)
-                    .map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name} [Mã: {d.code}] (Còn: {d.available})
-                      </option>
-                    ))}
+                  {filteredDevices.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name} [Mã: {d.code}] (Còn: {d.available})
+                    </option>
+                  ))}
                 </select>
+                {deviceSearch && filteredDevices.length === 0 && (
+                  <p className="text-xs text-rose-500 mt-2 italic">Không tìm thấy thiết bị nào khớp với từ khóa.</p>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

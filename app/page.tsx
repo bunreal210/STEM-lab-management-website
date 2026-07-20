@@ -694,6 +694,8 @@ export default function App() {
             loans={loans}
             reports={reports}
             journal={journal}
+            schedules={schedules}
+            devices={devices}
             onUpdateProfile={updateProfile}
             pendingLoans={pendingLoans}
             activeLoans={activeLoans}

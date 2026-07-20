@@ -1,9 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { User, Shield, Send, Bell, PackageMinus, TriangleAlert, ClipboardList, Zap, PlusCircle, CalendarDays, NotebookPen, PenTool, UserRound, Phone, MapPin, Calendar, CheckCircle2, UserPen, Clock } from 'lucide-react'
+import { User, Shield, Send, Bell, PackageMinus, TriangleAlert, ClipboardList, Zap, PlusCircle, CalendarDays, NotebookPen, PenTool, UserRound, Phone, MapPin, Calendar, CheckCircle2, UserPen, Clock, Download } from 'lucide-react'
 import { SeverityBadge } from '@/components/ui/badges'
-import type { Loan, DeviceReport, Tab, Device, JournalEntry, UserProfile } from '@/lib/types'
+import type { Loan, DeviceReport, Tab, Device, JournalEntry, UserProfile, Schedule } from '@/lib/types'
+import { downloadCSV } from '@/lib/utils/export'
+import { generatePDF } from '@/lib/utils/pdf-export'
+import { ReportTemplate } from './report-template'
 
 interface ProfileTabProps {
   profile: UserProfile | null
@@ -11,6 +14,8 @@ interface ProfileTabProps {
   loans: Loan[]
   reports: DeviceReport[]
   journal: JournalEntry[]
+  schedules: Schedule[]
+  devices: Device[]
   onUpdateProfile: (name: string, class_name: string, phone: string, dob: string) => Promise<void>
   // Admin props
   pendingLoans: number
@@ -35,6 +40,8 @@ export function ProfileTab({
   loans,
   reports,
   journal,
+  schedules,
+  devices,
   onUpdateProfile,
   pendingLoans,
   activeLoans,
@@ -51,7 +58,14 @@ export function ProfileTab({
   setJournalModalOpen,
   setPostModalOpen,
 }: ProfileTabProps) {
-  const [activeSubTab, setActiveSubTab] = useState<'info' | 'loans' | 'reports' | 'journals' | 'admin'>('info')
+  const [activeSubTab, setActiveSubTab] = useState<'info' | 'loans' | 'reports' | 'journals' | 'admin' | 'export'>('info')
+  const [exportStartDate, setExportStartDate] = useState('')
+  const [exportEndDate, setExportEndDate] = useState('')
+  const [chkDevices, setChkDevices] = useState(false)
+  const [chkLoans, setChkLoans] = useState(false)
+  const [chkReports, setChkReports] = useState(false)
+  const [chkSchedules, setChkSchedules] = useState(false)
+  const [chkJournals, setChkJournals] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState(profile?.name || '')
   const [editClass, setEditClass] = useState(profile?.class_name || '')
@@ -68,6 +82,61 @@ export function ProfileTab({
   const personalLoans = loans.filter(l => l.user_id === authUser?.id)
   const personalReports = reports.filter(r => r.reporter_id === authUser?.id)
   const personalJournals = journal.filter(j => j.author_id === authUser?.id)
+
+  const filteredLoansData = (isAdmin ? loans : personalLoans).filter(l => 
+    (!exportStartDate || new Date(l.created_at) >= new Date(exportStartDate)) &&
+    (!exportEndDate || new Date(l.created_at) <= new Date(exportEndDate))
+  )
+  const filteredReportsData = reports.filter(r => 
+    (!exportStartDate || new Date(r.created_at) >= new Date(exportStartDate)) &&
+    (!exportEndDate || new Date(r.created_at) <= new Date(exportEndDate))
+  )
+  const filteredSchedulesData = (isAdmin ? schedules : schedules.filter(s => s.instructor === profile?.name)).filter(s => 
+    (!exportStartDate || new Date(s.date) >= new Date(exportStartDate)) &&
+    (!exportEndDate || new Date(s.date) <= new Date(exportEndDate))
+  )
+  const filteredJournalsData = (isAdmin ? journal : personalJournals).filter(j => j.journal_role === 'teacher').filter(j => 
+    (!exportStartDate || new Date(j.created_at) >= new Date(exportStartDate)) &&
+    (!exportEndDate || new Date(j.created_at) <= new Date(exportEndDate))
+  )
+
+  const handleExportPDF = async () => {
+    if (!chkDevices && !chkLoans && !chkReports && !chkSchedules && !chkJournals) {
+      alert('Vui lòng chọn ít nhất một nội dung để xuất báo cáo.')
+      return
+    }
+    const filename = `Bao_Cao_STEM_${new Date().getTime()}.pdf`
+    setLoading(true)
+    await generatePDF('export-report-template', filename)
+    setLoading(false)
+  }
+
+  const handleExportCSV = () => {
+    if (!chkDevices && !chkLoans && !chkReports && !chkSchedules && !chkJournals) {
+      alert('Vui lòng chọn ít nhất một nội dung để xuất báo cáo.')
+      return
+    }
+    if (chkDevices && isAdmin) {
+      const data = devices.map(d => [d.code, d.name, d.category, d.total, d.available, d.status])
+      downloadCSV('tinh-trang-thiet-bi.csv', [['Mã', 'Tên thiết bị', 'Danh mục', 'Tổng số', 'Khả dụng', 'Trạng thái'], ...data])
+    }
+    if (chkLoans) {
+      const rows = filteredLoansData.map(l => [l.user_name, l.device_name, l.quantity, new Date(l.created_at).toLocaleDateString(), l.return_date, l.status])
+      downloadCSV('lich-su-muon-tra.csv', [['Người mượn', 'Thiết bị', 'Số lượng', 'Ngày mượn', 'Hạn trả', 'Trạng thái'], ...rows])
+    }
+    if (chkReports && isAdmin) {
+      const rows = filteredReportsData.map(r => [r.device_name, r.reporter_name, r.description, r.severity, new Date(r.created_at).toLocaleDateString(), r.status])
+      downloadCSV('nhat-ky-bao-hong.csv', [['Thiết bị', 'Người báo', 'Mô tả', 'Mức độ', 'Ngày báo', 'Trạng thái'], ...rows])
+    }
+    if (chkSchedules) {
+      const rows = filteredSchedulesData.map(s => [s.title, s.date, s.time_range, s.instructor, s.target_audience])
+      downloadCSV('thong-ke-tiet-day.csv', [['Nội dung', 'Ngày', 'Thời gian', 'Giáo viên phụ trách', 'Đối tượng'], ...rows])
+    }
+    if (chkJournals) {
+      const rows = filteredJournalsData.map(j => [new Date(j.created_at).toLocaleDateString(), j.target_class, j.subject, j.rating, j.content])
+      downloadCSV('danh-gia-tiet-day.csv', [['Ngày', 'Lớp', 'Môn học', 'Đánh giá (Sao)', 'Nhận xét'], ...rows])
+    }
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -130,6 +199,7 @@ export function ProfileTab({
           { id: 'loans', label: `Lịch sử mượn (${personalLoans.length})` },
           { id: 'reports', label: `Báo hỏng đã gửi (${personalReports.length})` },
           { id: 'journals', label: `Nhật ký của tôi (${personalJournals.length})` },
+          ...(isAdmin || isTeacher ? [{ id: 'export', label: 'Xuất Báo cáo' }] : []),
           ...(isAdmin || isTeacher ? [{ id: 'admin', label: 'Quản trị hệ thống' }] : []),
         ].map(tb => (
           <button
@@ -151,6 +221,69 @@ export function ProfileTab({
 
       {/* ── SUB-TAB CONTENTS ── */}
       <div className="bg-white rounded-3xl border border-slate-200 p-6 md:p-8 shadow-sm">
+        {/* EXPORT TAB */}
+        {activeSubTab === 'export' && (isAdmin || isTeacher) && (
+          <div className="space-y-6">
+            <h3 className="text-lg font-bold text-indigo-950 flex items-center gap-2">
+              <Download className="w-5 h-5 text-indigo-600" /> Xuất Báo cáo Thống kê
+            </h3>
+            
+            <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-bold text-slate-500 uppercase">Từ ngày:</label>
+                <input type="date" value={exportStartDate} onChange={e => setExportStartDate(e.target.value)} className="text-sm px-3 py-1.5 rounded-lg border border-slate-200" />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-bold text-slate-500 uppercase">Đến ngày:</label>
+                <input type="date" value={exportEndDate} onChange={e => setExportEndDate(e.target.value)} className="text-sm px-3 py-1.5 rounded-lg border border-slate-200" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              <div className="p-5 border border-slate-200 rounded-2xl space-y-4">
+                <h4 className="font-bold text-slate-800">Chọn nội dung xuất báo cáo</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {isAdmin && (
+                    <>
+                      <label className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer">
+                        <input type="checkbox" checked={chkDevices} onChange={e => setChkDevices(e.target.checked)} className="w-4 h-4" />
+                        <span className="text-sm font-semibold">Tình trạng thiết bị hiện tại</span>
+                      </label>
+                      <label className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer">
+                        <input type="checkbox" checked={chkReports} onChange={e => setChkReports(e.target.checked)} className="w-4 h-4" />
+                        <span className="text-sm font-semibold">Nhật ký báo hỏng / sự cố</span>
+                      </label>
+                    </>
+                  )}
+                  <label className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer">
+                    <input type="checkbox" checked={chkLoans} onChange={e => setChkLoans(e.target.checked)} className="w-4 h-4" />
+                    <span className="text-sm font-semibold">{isAdmin ? 'Nhật ký Mượn/Trả (Toàn bộ)' : 'Nhật ký Mượn/Trả cá nhân'}</span>
+                  </label>
+                  <label className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer">
+                    <input type="checkbox" checked={chkSchedules} onChange={e => setChkSchedules(e.target.checked)} className="w-4 h-4" />
+                    <span className="text-sm font-semibold">{isAdmin ? 'Số tiết dạy của toàn bộ GV' : 'Số tiết đã dạy của cá nhân'}</span>
+                  </label>
+                  {(isAdmin || isTeacher) && (
+                    <label className="flex items-center gap-3 p-3 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-pointer">
+                      <input type="checkbox" checked={chkJournals} onChange={e => setChkJournals(e.target.checked)} className="w-4 h-4" />
+                      <span className="text-sm font-semibold">Đánh giá tiết học (Giáo viên)</span>
+                    </label>
+                  )}
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-100">
+                  <button onClick={handleExportPDF} disabled={loading} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 transition disabled:opacity-50">
+                    <Download className="w-4 h-4" /> {loading ? 'Đang tạo PDF...' : 'Xuất dưới dạng PDF (Gộp)'}
+                  </button>
+                  <button onClick={handleExportCSV} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 transition">
+                    <Download className="w-4 h-4" /> Xuất dưới dạng CSV (Từng file)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* INFO TAB */}
         {activeSubTab === 'info' && (
           <div className="max-w-xl">
@@ -669,6 +802,23 @@ export function ProfileTab({
           </div>
         )}
       </div>
+
+      <ReportTemplate
+        id="export-report-template"
+        exporterName={profile?.name || 'Unknown'}
+        exportDate={new Date().toLocaleString('vi-VN')}
+        source="Hệ thống Quản lý STEM Lab"
+        devices={isAdmin ? devices : []}
+        loans={filteredLoansData}
+        reports={filteredReportsData}
+        schedules={filteredSchedulesData}
+        journals={filteredJournalsData}
+        showDevices={chkDevices}
+        showLoans={chkLoans}
+        showReports={chkReports}
+        showSchedules={chkSchedules}
+        showTeacherFeedback={chkJournals}
+      />
     </section>
   )
 }
