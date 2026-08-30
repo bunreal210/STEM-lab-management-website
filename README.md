@@ -8,7 +8,7 @@
 [![React](https://img.shields.io/badge/React-18-61dafb.svg)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8.svg)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database%20%26%20Auth-3ecf8e.svg)](https://supabase.com/)
-[![FabLab](https://img.shields.io/badge/FabLab-BDQ%20STEM%20Lab-emerald.svg)](https://www.fablabs.io/labs/bdqstemlab)
+[![FabLab](https://img.shields.io/badge/FabLab-STEM%20Lab__Bac%20Dong%20Quan%20High%20School-emerald.svg)](https://www.fablabs.io/labs/bdqstemlab)
 
 ---
 
@@ -19,7 +19,7 @@
 - 🧰 Quản lý thiết bị, linh kiện, cảm biến và máy in 3D trong kho.
 - 📦 Lập phiếu mượn/trả đồ trực tuyến có bộ lọc và tìm kiếm nhanh.
 - 📅 **Lịch hoạt động dạng Cuốn Lịch (Calendar View):** Tô đỏ các ngày có lịch học, click xem chi tiết từng tiết học.
-- 🌐 Kết nối mạng lưới chế tạo quốc tế qua nút liên kết **[FabLab BDQ](https://www.fablabs.io/labs/bdqstemlab)**.
+- 🌐 Kết nối mạng lưới chế tạo Fab Foundation quốc tế qua trang FabLab: **[STEM Lab_Bac Dong Quan High School](https://www.fablabs.io/labs/bdqstemlab)**.
 - 📓 **Sổ Nhật ký Phòng Lab Điện tử:** Phân quyền theo 3 vai trò (Học sinh, Giáo viên, Quản trị) kèm xếp sao chất lượng buổi học.
 - 📄 **Xuất Báo cáo Đa định dạng:** Xuất PDF chuyên nghiệp đa trang (kèm logo trường, thời gian, người xuất) và file CSV chuẩn tiếng Việt UTF-8 BOM.
 - 🔔 **Hệ thống Thông báo Đa kênh 100% Miễn phí:** Gửi tin nhắn tức thì qua Telegram Bot, Discord Webhook (Rich Embed), Zalo Webhook, Web Push Trình duyệt và Custom Webhook.
@@ -31,7 +31,7 @@
 | Nhóm tính năng | Chi tiết chức năng |
 |---|---|
 | 📅 **Lịch Hoạt Động Cuốn Lịch** | Lưới lịch tháng 7 ngày (T2 &rarr; CN), nút chuyển tháng trước/sau và nút "Hôm nay". **Các ngày có lịch học được đánh dấu màu ĐỎ nổi bật**, bấm vào xem ngay danh sách tiết học, giáo viên phụ trách, lớp học và nội dung thực hành. Hỗ trợ chuyển đổi nhanh giữa dạng *Cuốn Lịch* và dạng *Danh Sách*. |
-| 🌐 **Liên kết FabLab Quốc Tế** | Nút liên kết trực tiếp tới trang [BDQ STEM FabLab](https://www.fablabs.io/labs/bdqstemlab) trên mạng lưới Fab Foundation toàn cầu ngay tại Banner Trang chủ. |
+| 🌐 **Liên kết FabLab Quốc Tế** | Nút liên kết trực tiếp tới trang [STEM Lab_Bac Dong Quan High School](https://www.fablabs.io/labs/bdqstemlab) trên mạng lưới Fab Foundation toàn cầu ngay tại Banner Trang chủ. |
 | 🧰 **Kho Thiết bị & Linh kiện** | Phân loại theo danh mục (*Robotics, Vi điều khiển, In 3D & Chế tạo, Cảm biến & Module, Thiết bị Đo lường*), theo dõi số lượng tồn/sẵn sàng. |
 | 📦 **Mượn & Trả Thiết bị** | Học sinh đăng ký phiếu mượn với bộ lọc thiết bị khả dụng; Quản trị viên duyệt mượn và duyệt trả 1-click. |
 | 📓 **Nhật Ký Lab 3 Phân Hệ** | <ul><li>**Học sinh:** Báo cáo kết quả và sản phẩm sau buổi thực hành.</li><li>**Giáo viên:** Nhận xét nề nếp và xếp sao (1-5 sao) chất lượng buổi dạy.</li><li>**Quản trị:** Ghi nhận kiểm kê tình trạng máy móc & phòng ốc.</li></ul> |
@@ -176,8 +176,9 @@ npm run build
 
 ---
 
-## 👤 Đơn vị Quản lý & Bản quyền
+## 👤 Đơn vị Quản lý, Thiết kế & Bản quyền
 
+- **Thiết kế & Vận hành:** [Phạm Công Vinh](https://www.facebook.com/bunreal210)
 - **Đơn vị phát triển:** Phòng STEM Lab – **Trường THPT Bắc Đông Quan**
 - **Đơn vị tài trợ:** **Tập đoàn Công nghiệp – Năng lượng Quốc gia Việt Nam (PetroVietnam)**
 - **Phiên bản:** **v4.0.0** (Cập nhật tháng 08/2026)

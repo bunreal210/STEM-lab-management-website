@@ -85,7 +85,7 @@ export function HomeTab({
               rel="noopener noreferrer"
               className="px-5 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg hover:shadow-emerald-500/25 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <Globe className="w-4 h-4" /> FabLab BDQ Quốc Tế <ExternalLink className="w-3.5 h-3.5" />
+              <Globe className="w-4 h-4" /> Trang FabLab của chúng tôi <ExternalLink className="w-3.5 h-3.5" />
             </a>
             <button
               onClick={() => switchTab('nhat-ky')}
