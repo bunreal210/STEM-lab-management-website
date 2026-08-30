@@ -40,7 +40,7 @@ export function AppHeader({
       {/* ── TOP ANNOUNCEMENT BAR ── */}
       <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white text-[11px] sm:text-xs py-2 px-4 text-center font-medium flex items-center justify-center gap-2 border-b border-indigo-900/50">
         <Zap className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400 animate-pulse shrink-0" />
-        <span>Chương trình <b>STEM INNOVATION PETROVIETNAM</b> – THPT Bắc Đông Quan</span>
+        <span>Dự án <b>STEM INNOVATION PETROVIETNAM</b> được tài trợ bởi <b>Tập đoàn Công nghiệp – Năng lượng Quốc gia Việt Nam</b> </span>
       </div>
 
       {/* ── STICKY MAIN HEADER ── */}
