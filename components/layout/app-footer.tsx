@@ -11,7 +11,7 @@ const FOOTER_NAVIGATION_LINKS: Array<[Tab, string]> = [
   ['lich-hoc', 'Lịch hoạt động'],
   ['nhat-ky', 'Nhật ký Lab'],
   ['kho-tai-lieu', 'Thư viện số'],
-  ['truyen-thong', 'Tin tức'],
+  ['muon-tra', 'Mượn thiết bị'],
   ['bao-hong', 'Báo lỗi'],
 ]
 

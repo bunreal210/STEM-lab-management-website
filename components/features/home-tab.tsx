@@ -1,6 +1,6 @@
 'use client'
 
-import { NotebookPen, TriangleAlert, ArrowLeftRight, Lock, Sparkles, Cpu, CalendarDays, FileText, Users, ArrowRight } from 'lucide-react'
+import { NotebookPen, TriangleAlert, ArrowLeftRight, Lock, Sparkles, Cpu, CalendarDays, FileText, Users, ArrowRight, Globe, ExternalLink } from 'lucide-react'
 import type { Tab } from '@/lib/types'
 
 interface HomeTabProps {
@@ -75,15 +75,23 @@ export function HomeTab({
           <div className="flex flex-col sm:flex-row justify-center gap-3 pt-3">
             <button
               onClick={() => switchTab('co-so-vat-chat')}
-              className="px-6 py-3.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg hover:shadow-sky-500/25 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="px-5 py-3.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg hover:shadow-sky-500/25 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <Cpu className="w-4 h-4" /> Khám phá thiết bị
             </button>
+            <a
+              href="https://www.fablabs.io/labs/bdqstemlab"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-5 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg hover:shadow-emerald-500/25 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Globe className="w-4 h-4" /> FabLab BDQ Quốc Tế <ExternalLink className="w-3.5 h-3.5" />
+            </a>
             <button
               onClick={() => switchTab('nhat-ky')}
-              className="px-6 py-3.5 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 rounded-xl text-xs sm:text-sm font-bold hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="px-5 py-3.5 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 rounded-xl text-xs sm:text-sm font-bold hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              <NotebookPen className="w-4 h-4" /> Xem Nhật ký Lab
+              <NotebookPen className="w-4 h-4" /> Nhật ký Lab
             </button>
           </div>
         </div>

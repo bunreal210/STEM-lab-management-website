@@ -15,7 +15,6 @@ import { HomeTab } from '@/components/features/home-tab'
 import { DevicesTab } from '@/components/features/devices-tab'
 import { SchedulesTab } from '@/components/features/schedules-tab'
 import { MaterialsTab } from '@/components/features/materials-tab'
-import { PostsTab } from '@/components/features/posts-tab'
 import { JournalTab } from '@/components/features/journal-tab'
 import { BorrowTab } from '@/components/features/borrow-tab'
 import { ReportsTab } from '@/components/features/reports-tab'
@@ -27,10 +26,8 @@ import { AuthModal } from '@/components/modals/auth-modal'
 import { DeviceModal } from '@/components/modals/device-modal'
 import { ScheduleModal } from '@/components/modals/schedule-modal'
 import { MaterialModal } from '@/components/modals/material-modal'
-import { PostModal } from '@/components/modals/post-modal'
 import { JournalModal } from '@/components/modals/journal-modal'
 import { ReportModal } from '@/components/modals/report-modal'
-import { FullPostModal } from '@/components/modals/full-post-modal'
 import { NotificationModal } from '@/components/modals/notification-modal'
 import { sendNotification } from '@/lib/services/notifications'
 
@@ -43,7 +40,6 @@ export default function App() {
   const [devices, setDevices]         = useState<Device[]>([])
   const [schedules, setSchedules]     = useState<Schedule[]>([])
   const [materials, setMaterials]     = useState<Material[]>([])
-  const [posts, setPosts]             = useState<Post[]>([])
   const [loans, setLoans]             = useState<Loan[]>([])
   const [journal, setJournal]         = useState<JournalEntry[]>([])
   const [reports, setReports]         = useState<DeviceReport[]>([])
@@ -67,10 +63,8 @@ export default function App() {
   const [editDevice, setEditDevice]     = useState<Device | null>(null)
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false)
   const [materialModalOpen, setMaterialModalOpen] = useState(false)
-  const [postModalOpen, setPostModalOpen]           = useState(false)
   const [journalModalOpen, setJournalModalOpen]     = useState(false)
   const [reportModalOpen, setReportModalOpen]       = useState(false)
-  const [fullPost, setFullPost]         = useState<Post | null>(null)
   const [notificationModalOpen, setNotificationModalOpen] = useState(false)
 
   // ─── Init ────────────────────────────────────────────────────────────────────
@@ -95,17 +89,15 @@ export default function App() {
 
   const loadPublicData = async () => {
     setLoading(true)
-    const [devRes, scRes, matRes, postRes, jnRes] = await Promise.all([
+    const [devRes, scRes, matRes, jnRes] = await Promise.all([
       supabase.from('devices').select('*').order('created_at'),
       supabase.from('schedules').select('*').order('date'),
       supabase.from('materials').select('*').order('created_at'),
-      supabase.from('posts').select('*').order('published_at', { ascending: false }),
       supabase.from('journal_entries').select('*').order('date', { ascending: false }),
     ])
     if (devRes.data)  setDevices(devRes.data)
     if (scRes.data)   setSchedules(scRes.data)
     if (matRes.data)  setMaterials(matRes.data)
-    if (postRes.data) setPosts(postRes.data)
     if (jnRes.data)   setJournal(jnRes.data)
     setLoading(false)
   }
@@ -308,41 +300,6 @@ export default function App() {
     if (!confirm('Xóa tài liệu này?')) return
     await supabase.from('materials').delete().eq('id', id)
     setMaterials(m => m.filter(x => x.id !== id))
-  }
-
-  // ─── POSTS ───────────────────────────────────────────────────────────────────
-  async function handlePostSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const fd = new FormData(e.currentTarget)
-    const title = fd.get('title') as string
-    const category = fd.get('category') as string
-    const author = profile?.name || 'Ban Quản trị'
-
-    const { error } = await supabase.from('posts').insert({
-      title, category,
-      content: fd.get('content'), image_url: (fd.get('image_url') as string) || null,
-      author,
-    })
-    if (error) { showDialog('Lỗi', error.message, false); return }
-    setPostModalOpen(false)
-    showDialog('Thành công', 'Đã đăng bài viết mới.')
-
-    sendNotification('post_created', {
-      title: '📰 Bài viết / Tin tức mới',
-      details: {
-        'Tiêu đề': title,
-        'Chuyên mục': category,
-        'Người đăng': author,
-      },
-    })
-    loadPublicData()
-  }
-
-  async function deletePost(id: string) {
-    if (!confirm('Xóa bài viết này?')) return
-    await supabase.from('posts').delete().eq('id', id)
-    setPosts(p => p.filter(x => x.id !== id))
-    showDialog('Đã xóa', 'Bài viết đã được gỡ xuống.')
   }
 
   // ─── BORROW / LOANS ──────────────────────────────────────────────────────────
@@ -617,16 +574,6 @@ export default function App() {
           />
         )}
 
-        {tab === 'truyen-thong' && (
-          <PostsTab
-            posts={posts}
-            isAdmin={isAdmin}
-            setPostModalOpen={setPostModalOpen}
-            setFullPost={setFullPost}
-            deletePost={deletePost}
-          />
-        )}
-
         {tab === 'nhat-ky' && (
           <JournalTab
             journal={journal}
@@ -681,7 +628,6 @@ export default function App() {
             setDeviceModalOpen={setDeviceModalOpen}
             setScheduleModalOpen={setScheduleModalOpen}
             setJournalModalOpen={setJournalModalOpen}
-            setPostModalOpen={setPostModalOpen}
           />
         )}
       </main>
@@ -719,12 +665,6 @@ export default function App() {
         onSubmit={handleMaterialSubmit}
       />
 
-      <PostModal
-        isOpen={postModalOpen}
-        onClose={() => setPostModalOpen(false)}
-        onSubmit={handlePostSubmit}
-      />
-
       <JournalModal
         isOpen={journalModalOpen}
         onClose={() => setJournalModalOpen(false)}
@@ -738,11 +678,6 @@ export default function App() {
         onClose={() => setReportModalOpen(false)}
         devices={devices}
         onSubmit={handleReportSubmit}
-      />
-
-      <FullPostModal
-        post={fullPost}
-        onClose={() => setFullPost(null)}
       />
 
       <NotificationModal

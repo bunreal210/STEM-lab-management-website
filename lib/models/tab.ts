@@ -3,7 +3,6 @@ export type Tab =
   | 'co-so-vat-chat'
   | 'lich-hoc'
   | 'kho-tai-lieu'
-  | 'truyen-thong'
   | 'muon-tra'
   | 'nhat-ky'
   | 'bao-hong'

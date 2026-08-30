@@ -21,7 +21,6 @@ const MAIN_NAVIGATION_TABS: Array<[Tab, string]> = [
   ['co-so-vat-chat', 'Kho Thiết bị'],
   ['lich-hoc', 'Lịch hoạt động'],
   ['kho-tai-lieu', 'Thư viện số'],
-  ['truyen-thong', 'Tin tức'],
   ['nhat-ky', 'Nhật ký Lab'],
 ]
 

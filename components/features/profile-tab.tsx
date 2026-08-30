@@ -31,7 +31,6 @@ interface ProfileTabProps {
   setDeviceModalOpen: (val: boolean) => void
   setScheduleModalOpen: (val: boolean) => void
   setJournalModalOpen: (val: boolean) => void
-  setPostModalOpen: (val: boolean) => void
 }
 
 export function ProfileTab({
@@ -56,7 +55,6 @@ export function ProfileTab({
   setDeviceModalOpen,
   setScheduleModalOpen,
   setJournalModalOpen,
-  setPostModalOpen,
 }: ProfileTabProps) {
   const [activeSubTab, setActiveSubTab] = useState<'info' | 'loans' | 'reports' | 'journals' | 'admin' | 'export'>('info')
   const [exportStartDate, setExportStartDate] = useState('')
@@ -786,15 +784,6 @@ export function ProfileTab({
                     className="px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs sm:text-sm font-bold border border-blue-100 flex items-center gap-1.5 transition"
                   >
                     <NotebookPen className="w-4 h-4" /> Ghi nhật ký Lab
-                  </button>
-                  <button
-                    onClick={() => {
-                      switchTab('truyen-thong')
-                      setTimeout(() => setPostModalOpen(true), 100)
-                    }}
-                    className="px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-xs sm:text-sm font-bold border border-indigo-100 flex items-center gap-1.5 transition"
-                  >
-                    <PenTool className="w-4 h-4" /> Viết bài truyền thông
                   </button>
                 </div>
               </div>
