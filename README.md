@@ -1,30 +1,43 @@
-# 🔬 STEM Lab – THPT Bắc Đông Quan
+# 🔬 STEM Lab – THPT Bắc Đông Quan (v4.0)
 
-> **Hệ thống Quản lý Phòng Thực hành STEM & Nghiên cứu Khoa học Kỹ thuật**  
+> **Hệ thống Quản lý Phòng Thực hành STEM, Nghiên cứu Khoa học Kỹ thuật & FabLab**  
 > Thuộc chương trình **STEM INNOVATION PETROVIETNAM** – Tài trợ bởi Tập đoàn Công nghiệp – Năng lượng Quốc gia Việt Nam.
+
+[![Version](https://img.shields.io/badge/version-4.0.0-blue.svg)](https://github.com/bunreal210/STEM-lab-management-website)
+[![Next.js](https://img.shields.io/badge/Next.js-16.0-black.svg)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-18-61dafb.svg)](https://react.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8.svg)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-Database%20%26%20Auth-3ecf8e.svg)](https://supabase.com/)
+[![FabLab](https://img.shields.io/badge/FabLab-BDQ%20STEM%20Lab-emerald.svg)](https://www.fablabs.io/labs/bdqstemlab)
 
 ---
 
 ## 🖥️ Giới thiệu Tổng quan
 
-Website quản lý phòng máy và thiết bị STEM dành riêng cho giáo viên và học sinh trường **THPT Bắc Đông Quan**. Ứng dụng cung cấp giải pháp chuyển đổi số toàn diện: từ quản lý linh kiện, đăng ký mượn/trả, sổ nhật ký phòng Lab điện tử, xuất báo cáo PDF/CSV, đến hệ thống thông báo tự động đa kênh qua **Telegram, Discord, Zalo và Trình duyệt**.
+**STEM Lab BDQ v4.0** là nền tảng quản lý phòng thực hành và trung tâm chế tạo kỹ thuật số dành cho cán bộ, giáo viên và học sinh trường **THPT Bắc Đông Quan**. Hệ thống cung cấp giải pháp chuyển đổi số toàn diện:
+
+- 🧰 Quản lý thiết bị, linh kiện, cảm biến và máy in 3D trong kho.
+- 📦 Lập phiếu mượn/trả đồ trực tuyến có bộ lọc và tìm kiếm nhanh.
+- 📅 **Lịch hoạt động dạng Cuốn Lịch (Calendar View):** Tô đỏ các ngày có lịch học, click xem chi tiết từng tiết học.
+- 🌐 Kết nối mạng lưới chế tạo quốc tế qua nút liên kết **[FabLab BDQ](https://www.fablabs.io/labs/bdqstemlab)**.
+- 📓 **Sổ Nhật ký Phòng Lab Điện tử:** Phân quyền theo 3 vai trò (Học sinh, Giáo viên, Quản trị) kèm xếp sao chất lượng buổi học.
+- 📄 **Xuất Báo cáo Đa định dạng:** Xuất PDF chuyên nghiệp đa trang (kèm logo trường, thời gian, người xuất) và file CSV chuẩn tiếng Việt UTF-8 BOM.
+- 🔔 **Hệ thống Thông báo Đa kênh 100% Miễn phí:** Gửi tin nhắn tức thì qua Telegram Bot, Discord Webhook (Rich Embed), Zalo Webhook, Web Push Trình duyệt và Custom Webhook.
 
 ---
 
-## ✨ Tính năng Nổi bật
+## ✨ Tính năng Nổi bật trong Phiên bản 4.0
 
-| Nhóm tính năng | Chi tiết tính năng |
+| Nhóm tính năng | Chi tiết chức năng |
 |---|---|
-| 🔐 **Xác thực & Phân quyền** | Đăng nhập/Đăng ký học sinh qua Supabase Auth; Phân quyền 3 cấp độ: `student` (học sinh), `teacher` (giáo viên), `admin` (quản trị viên). |
-| 🧰 **Quản lý Thiết bị** | Tra cứu thiết bị trong kho, lọc theo danh mục (Robotics, Vi điều khiển, In 3D, Đo lường), xem số lượng khả dụng tức thì. |
-| 📦 **Mượn & Trả trực tuyến** | Học sinh lập phiếu mượn có tìm kiếm nhanh; Quản trị viên duyệt xuất kho và duyệt hoàn trả chỉ với 1 click. |
-| 📄 **Xuất Báo cáo CSV & PDF** | Xuất báo cáo hoạt động phòng máy ra file **CSV (chuẩn tiếng Việt UTF-8 BOM)** hoặc file **PDF thiết kế chuyên nghiệp đa trang** (kèm logo trường, ngày giờ, người xuất). |
-| 🔔 **Thông báo Đa kênh (100% Free)** | Tích hợp gửi tin nhắn tự động tức thì qua **Telegram Bot**, **Discord Webhook (Rich Embed)**, **Zalo Webhook**, **Web Push Popup Trình duyệt** và **Custom Webhook** với bộ lọc 7 sự kiện độc lập. |
-| 📓 **Sổ Nhật Ký Lab Điện Tử** | Phân quyền 3 phân hệ: *Học sinh* (báo cáo thực hành), *Giáo viên* (đánh giá xếp sao), *Quản trị* (kiểm kê tình trạng phòng). |
-| 📅 **Lịch Hoạt Động & CLB** | Lịch tập huấn KHKT, sinh hoạt CLB, phân loại mốc thời gian (Tuần này, Tháng này, Đã qua). |
-| 📚 **Thư Viện Kiến Thức Số** | Kho lưu trữ tài liệu PDF, video bài giảng và source code hướng dẫn lập trình vi điều khiển. |
-| 📰 **Bản Tin & Truyền Thông** | Đăng bài viết, hình ảnh hoạt động, thông báo cuộc thi KHKT và kết quả thi đấu Robotics. |
-| 🚨 **Báo Hỏng & Sự Cố** | Học sinh gửi phiếu báo lỗi linh kiện kèm mức độ nghiêm trọng; Admin tiếp nhận và ghi chú bảo trì. |
+| 📅 **Lịch Hoạt Động Cuốn Lịch** | Lưới lịch tháng 7 ngày (T2 &rarr; CN), nút chuyển tháng trước/sau và nút "Hôm nay". **Các ngày có lịch học được đánh dấu màu ĐỎ nổi bật**, bấm vào xem ngay danh sách tiết học, giáo viên phụ trách, lớp học và nội dung thực hành. Hỗ trợ chuyển đổi nhanh giữa dạng *Cuốn Lịch* và dạng *Danh Sách*. |
+| 🌐 **Liên kết FabLab Quốc Tế** | Nút liên kết trực tiếp tới trang [BDQ STEM FabLab](https://www.fablabs.io/labs/bdqstemlab) trên mạng lưới Fab Foundation toàn cầu ngay tại Banner Trang chủ. |
+| 🧰 **Kho Thiết bị & Linh kiện** | Phân loại theo danh mục (*Robotics, Vi điều khiển, In 3D & Chế tạo, Cảm biến & Module, Thiết bị Đo lường*), theo dõi số lượng tồn/sẵn sàng. |
+| 📦 **Mượn & Trả Thiết bị** | Học sinh đăng ký phiếu mượn với bộ lọc thiết bị khả dụng; Quản trị viên duyệt mượn và duyệt trả 1-click. |
+| 📓 **Nhật Ký Lab 3 Phân Hệ** | <ul><li>**Học sinh:** Báo cáo kết quả và sản phẩm sau buổi thực hành.</li><li>**Giáo viên:** Nhận xét nề nếp và xếp sao (1-5 sao) chất lượng buổi dạy.</li><li>**Quản trị:** Ghi nhận kiểm kê tình trạng máy móc & phòng ốc.</li></ul> |
+| 📄 **Xuất Báo Cáo PDF & CSV** | Tùy chọn xuất từng nội dung hoặc gộp nhiều nội dung: tình trạng phòng, nhật ký mượn/trả, nhật ký báo hỏng, số tiết đã dạy, tổng hợp đánh giá sao. Hỗ trợ xuất file PDF đóng khung đẹp mắt và CSV mở trực tiếp trên Excel. |
+| 🔔 **Thông Báo Tự Động Đa Kênh** | Tích hợp 5 kênh thông báo miễn phí (**Telegram, Discord Webhook, Zalo, Browser Web Push, Custom Webhook**) với 7 bộ lọc sự kiện độc lập. |
+| 🚨 **Báo Hỏng & Sự Cố** | Báo cáo nhanh sự cố linh kiện/thiết bị phân cấp theo mức độ nguy cấp; tự động cảnh báo ban quản trị. |
 
 ---
 
@@ -33,93 +46,90 @@ Website quản lý phòng máy và thiết bị STEM dành riêng cho giáo viê
 ```text
 STEM-lab-management-website/
 ├── .env.local                    # Biến môi trường Supabase (không commit)
-├── .gitignore                    # Danh sách file loại trừ khỏi Git
-├── .npmrc                        # Cấu hình legacy-peer-deps cho CI/CD
-├── README.md                     # Tài liệu giới thiệu dự án
-├── package.json                  # Dependencies & Scripts
+├── .gitignore                    # Danh sách file loại trừ Git
+├── .npmrc                        # Cấu hình legacy-peer-deps
+├── package.json                  # Dependencies (v4.0.0)
+├── README.md                     # Tài liệu giới thiệu & hướng dẫn v4.0
 ├── tailwind.config.ts            # Cấu hình Tailwind CSS
 ├── tsconfig.json                 # Cấu hình TypeScript
 │
 ├── app/
-│   ├── favicon.ico               # Icon ứng dụng
-│   ├── globals.css               # Phông chữ Google Fonts & Tailwind CSS
-│   ├── layout.tsx                # Root layout & Metadata
-│   └── page.tsx                  # Controller & Main Single Page App
+│   ├── favicon.ico               # Favicon STEM Lab
+│   ├── globals.css               # Phông chữ Outfit & Inter, Tailwind directives
+│   ├── layout.tsx                # Root layout & Metadata SEO
+│   └── page.tsx                  # Controller & SPA router chính
 │
-├── changelog/                    # Lịch sử phát triển chi tiết
+├── changelog/                    # Lịch sử phiên bản
 │   ├── v1.0.md
 │   ├── v2.0.md
-│   └── v3.0.md
+│   ├── v3.0.md
+│   └── v4.0.md                   # Nhật ký phát hành phiên bản 4.0
 │
 ├── components/
 │   ├── features/                 # Các Tab chức năng chính
-│   │   ├── admin-tab.tsx         # Khu vực quản trị & phê duyệt
-│   │   ├── borrow-tab.tsx        # Phiếu mượn thiết bị & lịch sử
-│   │   ├── devices-tab.tsx       # Kho thiết bị & linh kiện
-│   │   ├── home-tab.tsx          # Trang chủ & bảng tin nhanh
+│   │   ├── admin-tab.tsx         # Bảng điều khiển quản trị & duyệt mượn
+│   │   ├── borrow-tab.tsx        # Phiếu yêu cầu mượn thiết bị & lịch sử
+│   │   ├── devices-tab.tsx       # Danh mục thiết bị & linh kiện
+│   │   ├── home-tab.tsx          # Trang chủ, Banner FabLab & lối tắt
 │   │   ├── journal-tab.tsx       # Nhật ký Lab phân quyền 3 vai trò
-│   │   ├── materials-tab.tsx     # Thư viện tài liệu số
-│   │   ├── posts-tab.tsx         # Bản tin hoạt động
-│   │   ├── profile-tab.tsx       # Trang cá nhân & xuất báo cáo PDF/CSV
-│   │   ├── report-template.tsx   # Khung template phục vụ xuất báo cáo PDF
-│   │   ├── reports-tab.tsx       # Báo hỏng thiết bị
-│   │   └── schedules-tab.tsx     # Lịch hoạt động & nội quy
+│   │   ├── materials-tab.tsx     # Thư viện tài liệu kiến thức số
+│   │   ├── profile-tab.tsx       # Trang cá nhân & trung tâm xuất báo cáo
+│   │   ├── report-template.tsx   # Khung template xuất file PDF
+│   │   ├── reports-tab.tsx       # Báo hỏng & sự cố kỹ thuật
+│   │   └── schedules-tab.tsx     # Lịch hoạt động dạng Cuốn Lịch (Calendar View)
 │   │
-│   ├── layout/                   # Thành phần khung trang
-│   │   ├── app-header.tsx        # Top banner & Thanh điều hướng
-│   │   └── app-footer.tsx        # Chân trang & Thông tin liên hệ
+│   ├── layout/                   # Thành phần khung ứng dụng
+│   │   ├── app-header.tsx        # Header kính mờ, điều hướng & xác thực
+│   │   └── app-footer.tsx        # Footer thông tin nhà trường & bản quyền
 │   │
-│   ├── modals/                   # Các hộp thoại chức năng
+│   ├── modals/                   # Các hộp thoại chức năng (Dialogs)
 │   │   ├── auth-modal.tsx        # Đăng nhập / Đăng ký
-│   │   ├── device-modal.tsx      # Thêm / Sửa thiết bị
-│   │   ├── full-post-modal.tsx   # Xem chi tiết bài viết
+│   │   ├── device-modal.tsx      # Thêm / Chỉnh sửa thiết bị
 │   │   ├── journal-modal.tsx     # Ghi nhật ký phòng máy
-│   │   ├── material-modal.tsx    # Tải lên tài liệu
+│   │   ├── material-modal.tsx    # Tải lên tài liệu số
 │   │   ├── notification-modal.tsx# Cài đặt Thông báo Đa kênh (Telegram/Discord/Zalo)
-│   │   ├── post-modal.tsx        # Đăng bản tin
-│   │   ├── report-modal.tsx      # Gửi báo hỏng linh kiện
-│   │   └── schedule-modal.tsx    # Tạo lịch hoạt động
+│   │   ├── report-modal.tsx      # Gửi phiếu báo hỏng
+│   │   └── schedule-modal.tsx    # Tạo lịch hoạt động mới
 │   │
 │   └── ui/                       # Thành phần UI tái sử dụng
-│       ├── badges.tsx            # Huy hiệu trạng thái, mức độ
-│       └── dialog.tsx            # Hộp thoại thông báo tương tác
+│       ├── badges.tsx            # Badge trạng thái, huy hiệu phân loại
+│       └── dialog.tsx            # Modal thông báo hệ thống
 │
 ├── lib/
-│   ├── models/                   # Type definitions chi tiết
-│   │   ├── content.ts            # Material, Post, JournalEntry
+│   ├── models/                   # Type definitions TypeScript
+│   │   ├── content.ts            # Material, JournalEntry
 │   │   ├── inventory.ts          # Device, Loan, DeviceReport
 │   │   ├── tab.ts                # Tab navigation
 │   │   └── user.ts               # UserProfile, UserRole
 │   │
-│   ├── services/                 # Tầng xử lý logic & dữ liệu
-│   │   ├── notifications.ts      # Dispatcher thông báo đa kênh (Telegram/Discord/Zalo/Web Push)
-│   │   └── stem-lab.ts           # Tương tác cơ sở dữ liệu Supabase
+│   ├── services/                 # Xử lý Logic & Tương tác Cơ sở Dữ liệu
+│   │   ├── notifications.ts      # Multi-channel notification dispatcher
+│   │   └── stem-lab.ts           # Supabase CRUD service layer
 │   │
-│   ├── utils/                    # Các hàm tiện ích
-│   │   ├── date.ts               # Định dạng ngày giờ tiếng Việt
-│   │   ├── export.ts             # Xuất dữ liệu CSV (UTF-8 BOM)
-│   │   └── pdf-export.ts         # Trình xuất báo cáo PDF (html2canvas + jsPDF)
+│   ├── utils/                    # Thư viện tiện ích
+│   │   ├── date.ts               # Xử lý định dạng ngày giờ tiếng Việt
+│   │   ├── export.ts             # Xuất dữ liệu bảng CSV (UTF-8 BOM)
+│   │   └── pdf-export.ts         # Xuất báo cáo PDF đa trang (jsPDF + html2canvas)
 │   │
-│   ├── supabase.ts               # Khởi tạo Supabase client
-│   └── types.ts                  # Re-export các types toàn dự án
+│   ├── supabase.ts               # Supabase Client khởi tạo
+│   └── types.ts                  # Re-export toàn bộ kiểu dữ liệu
 │
 └── public/
-    └── assets/                   # Tài nguyên tĩnh
-        ├── css/
-        └── images/               # Logo trường & Logo tài trợ
+    └── assets/
+        └── images/               # Logo trường Bắc Đông Quan & Logo PetroVietnam
 ```
 
 ---
 
 ## 🛠️ Công nghệ Sử dụng
 
-- **Frontend Framework:** [Next.js 16 (App Router)](https://nextjs.org/) + [React 19](https://react.dev/)
-- **Ngôn ngữ:** [TypeScript](https://www.typescriptlang.org/)
+- **Frontend Core:** [Next.js 16 (App Router)](https://nextjs.org/) + [React 18](https://react.dev/)
+- **Ngôn ngữ:** [TypeScript 5](https://www.typescriptlang.org/)
 - **Styling:** [Tailwind CSS 3.4](https://tailwindcss.com/)
-- **Backend & Cơ sở dữ liệu:** [Supabase](https://supabase.com/) (PostgreSQL + Auth + Storage)
-- **Tạo tài liệu Báo cáo:** [jsPDF](https://github.com/parallax/jsPDF) & [html2canvas](https://html2canvas.hertzen.com/)
-- **Biểu tượng (Icons):** [Lucide React](https://lucide.dev/)
-- **Phông chữ:** `Outfit` (Heading) + `Inter` (Body) tối ưu hiển thị tiếng Việt
+- **Backend & Database:** [Supabase](https://supabase.com/) (PostgreSQL + RLS + Authentication)
+- **Engine Xuất Báo Cáo:** [jsPDF](https://github.com/parallax/jsPDF) & [html2canvas](https://html2canvas.hertzen.com/)
+- **Icon Set:** [Lucide React](https://lucide.dev/)
+- **Typography:** Google Fonts (`Outfit` cho tiêu đề + `Inter` cho nội dung văn bản tiếng Việt)
 
 ---
 
@@ -134,38 +144,41 @@ STEM-lab-management-website/
 npm install
 ```
 
-### 2. Cấu hình Biến môi trường
-Tạo tệp `.env.local` tại thư mục gốc với các thông số Supabase:
+### 2. Cấu hình Biến Môi trường
+Tạo tệp `.env.local` tại thư mục gốc của dự án:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-### 3. Khởi động môi trường Phát triển (Dev Server)
+### 3. Khởi chạy Môi trường Phát triển (Dev Server)
 ```bash
 npm run dev
 ```
-Truy cập ứng dụng tại: **`http://localhost:3000`**
+Mở trình duyệt truy cập tại: **`http://localhost:3000`**
 
-### 4. Biên dịch kiểm tra Sản phẩm (Production Build)
+### 4. Kiểm tra Biên dịch Sản phẩm (Production Build)
 ```bash
 npm run build
 ```
 
 ---
 
-## 📬 Cấu hình Thông báo Tự động (Miễn phí)
+## 📋 Lịch sử Phiên bản (Changelog)
 
-Hệ thống hỗ trợ thông báo tự động không giới hạn:
-1. **Telegram Bot:** Nhập `Bot Token` (từ `@BotFather`) và `Chat ID` nhóm.
-2. **Discord Webhook:** Vào cài đặt kênh Discord &rarr; `Integrations` &rarr; `Webhooks` &rarr; Dán `Webhook URL`.
-3. **Thông báo Trình duyệt:** Bấm nút *"Cấp quyền thông báo"* để nhận popup trực tiếp.
-4. **Zalo / Webhook khác:** Dán webhook URL từ bot Zalo hoặc server tự động hóa.
+| Phiên bản | Ngày phát hành | Điểm nổi bật |
+|---|---|---|
+| [v1.0](./changelog/v1.0.md) | 2026-06-10 | Khởi tạo hệ thống quản lý thiết bị cơ bản và tích hợp Supabase Auth |
+| [v2.0](./changelog/v2.0.md) | 2026-06-18 | Tái cấu trúc component modular, bổ sung UI Glassmorphism |
+| [v3.0](./changelog/v3.0.md) | 2026-06-25 | Nâng cấp phông chữ tiếng Việt chuẩn, sổ nhật ký phân quyền 3 vai trò |
+| [v3.1](./changelog/v3.1.md) | 2026-07-01 | Gộp Trang cá nhân & Trung tâm Quản trị, nâng cấp Header 1 dòng |
+| [**v4.0**](./changelog/v4.0.md) | **2026-08-31** | **Lịch hoạt động dạng Cuốn Lịch (tô đỏ ngày có lịch), tích hợp FabLab BDQ, thông báo đa kênh (Telegram/Discord/Zalo), xuất báo cáo PDF/CSV, tinh gọn bỏ tab Tin tức** |
 
 ---
 
-## 📜 Bản quyền & Đơn vị Quản lý
+## 👤 Đơn vị Quản lý & Bản quyền
 
-- **Đơn vị quản lý:** Ban Quản trị Phòng STEM Lab – **Trường THPT Bắc Đông Quan**
-- **Đơn vị tài trợ:** **Tập đoàn Dầu khí Quốc gia Việt Nam (PetroVietnam)**
-- **Phiên bản:** v3.2 (Cập nhật tháng 08/2026)
+- **Đơn vị phát triển:** Phòng STEM Lab – **Trường THPT Bắc Đông Quan**
+- **Đơn vị tài trợ:** **Tập đoàn Công nghiệp – Năng lượng Quốc gia Việt Nam (PetroVietnam)**
+- **Phiên bản:** **v4.0.0** (Cập nhật tháng 08/2026)
+- **Giấy phép:** Bản quyền nội bộ phục vụ công tác giảng dạy và học tập tại trường THPT Bắc Đông Quan.
