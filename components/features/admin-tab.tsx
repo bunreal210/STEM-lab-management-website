@@ -10,7 +10,7 @@ interface AdminTabProps {
   pendingReports: number
   loans: Loan[]
   reports: DeviceReport[]
-  setTgModalOpen: (val: boolean) => void
+  setNotificationModalOpen: (val: boolean) => void
   approveLoan: (id: string) => void
   rejectLoan: (id: string) => void
   returnLoan: (id: string) => void
@@ -29,7 +29,7 @@ export function AdminTab({
   pendingReports,
   loans,
   reports,
-  setTgModalOpen,
+  setNotificationModalOpen,
   approveLoan,
   rejectLoan,
   returnLoan,
@@ -54,10 +54,10 @@ export function AdminTab({
           </div>
         </div>
         <button
-          onClick={() => setTgModalOpen(true)}
-          className="flex items-center gap-2 bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition"
+          onClick={() => setNotificationModalOpen(true)}
+          className="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition cursor-pointer"
         >
-          <Send className="w-4 h-4" /> Cài đặt Telegram Bot
+          <Bell className="w-4 h-4 text-indigo-600" /> Cài đặt Thông báo (Zalo / Telegram)
         </button>
       </div>
 

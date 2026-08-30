@@ -30,7 +30,7 @@ function StatusBadge({ status }: { status: 'upcoming' | 'today' | 'past' }) {
   }
   const { label, cls } = map[status]
   return (
-    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${cls}`}>
+    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${cls}`}>
       {label}
     </span>
   )
@@ -69,7 +69,6 @@ export function SchedulesTab({
   const filtered = useMemo(() => {
     let list = enriched
 
-    // Search filter
     if (search.trim()) {
       const q = search.toLowerCase()
       list = list.filter(
@@ -79,7 +78,6 @@ export function SchedulesTab({
       )
     }
 
-    // Time filter
     const now = new Date()
     now.setHours(0, 0, 0, 0)
 
@@ -98,36 +96,41 @@ export function SchedulesTab({
         return d >= ms && d <= me
       })
     } else if (timeFilter === 'past') {
-      list = list.filter((sc) => sc.status === 'past')
+      list = list.filter((sc) => {
+        const d = new Date(sc.date + 'T00:00:00')
+        return d < now
+      })
     }
 
     return list
   }, [enriched, search, timeFilter])
 
-  // Dashboard counts
-  const totalCount = schedules.length
-  const upcomingCount = enriched.filter((s) => s.status === 'upcoming').length
+  const totalCount = enriched.length
+  const upcomingCount = enriched.filter((s) => s.status !== 'past').length
   const pastCount = enriched.filter((s) => s.status === 'past').length
 
   const filterButtons: { key: TimeFilter; label: string }[] = [
     { key: 'all', label: 'Tất cả' },
     { key: 'this_week', label: 'Tuần này' },
     { key: 'this_month', label: 'Tháng này' },
-    { key: 'past', label: 'Đã qua' },
+    { key: 'past', label: 'Đã kết thúc' },
   ]
 
   return (
     <section className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Lịch Học &amp; Hoạt Động CLB</h2>
-          <p className="text-sm text-slate-500 mt-1">Lịch tập huấn KHKT, sinh hoạt nội bộ và lịch mở cửa phòng Lab.</p>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <CalendarDays className="w-6 h-6 text-sky-600" />
+            Lịch Học &amp; Hoạt Động STEM
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">Theo dõi lịch tập huấn KHKT, sinh hoạt CLB và lịch thực hành phòng Lab.</p>
         </div>
         {isAdmin && (
           <button
             onClick={() => setScheduleModalOpen(true)}
-            className="bg-stemBlue-600 hover:bg-stemBlue-700 text-white text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl shadow-md transition flex items-center gap-2"
+            className="bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl shadow-sm hover:shadow transition flex items-center gap-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Tạo Lịch Mới
           </button>
@@ -135,53 +138,51 @@ export function SchedulesTab({
       </div>
 
       {/* Mini Dashboard */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white/70 border border-slate-200/60 rounded-2xl p-4 backdrop-blur-sm text-center shadow-sm">
-          <div className="flex items-center justify-center gap-2 text-slate-400 mb-1">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 text-center shadow-sm">
+          <div className="flex items-center justify-center gap-1.5 text-slate-400 mb-1">
             <CalendarDays className="w-4 h-4" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Tổng</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">Tổng số</span>
           </div>
-          <p className="text-2xl font-black text-slate-900">{totalCount}</p>
+          <p className="text-xl sm:text-2xl font-black text-slate-900">{totalCount}</p>
         </div>
-        <div className="bg-white/70 border border-emerald-200/60 rounded-2xl p-4 backdrop-blur-sm text-center shadow-sm">
-          <div className="flex items-center justify-center gap-2 text-emerald-500 mb-1">
+        <div className="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-3.5 sm:p-4 text-center shadow-sm">
+          <div className="flex items-center justify-center gap-1.5 text-emerald-600 mb-1">
             <CalendarCheck2 className="w-4 h-4" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Sắp tới</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">Sắp diễn ra</span>
           </div>
-          <p className="text-2xl font-black text-emerald-600">{upcomingCount}</p>
+          <p className="text-xl sm:text-2xl font-black text-emerald-700">{upcomingCount}</p>
         </div>
-        <div className="bg-white/70 border border-slate-200/60 rounded-2xl p-4 backdrop-blur-sm text-center shadow-sm">
-          <div className="flex items-center justify-center gap-2 text-slate-400 mb-1">
+        <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 text-center shadow-sm">
+          <div className="flex items-center justify-center gap-1.5 text-slate-400 mb-1">
             <History className="w-4 h-4" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Đã qua</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider">Đã qua</span>
           </div>
-          <p className="text-2xl font-black text-slate-500">{pastCount}</p>
+          <p className="text-xl sm:text-2xl font-black text-slate-600">{pastCount}</p>
         </div>
       </div>
 
       {/* Search + Filters */}
-      <div className="bg-white/70 border border-slate-200/60 rounded-2xl p-4 backdrop-blur-sm shadow-sm space-y-3">
-        {/* Search bar */}
+      <div className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm kiếm theo tiêu đề hoặc phụ trách..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-stemBlue-500/40 focus:border-stemBlue-400 transition"
+            placeholder="Tìm kiếm theo tiêu đề lịch hoặc giáo viên phụ trách..."
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
           />
         </div>
 
-        {/* Time filter buttons */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {filterButtons.map((btn) => (
             <button
               key={btn.key}
               onClick={() => setTimeFilter(btn.key)}
-              className={`text-xs font-bold px-4 py-2 rounded-xl transition-all duration-200 ${
+              className={`text-xs font-bold px-3.5 py-1.5 rounded-xl transition cursor-pointer ${
                 timeFilter === btn.key
-                  ? 'bg-stemBlue-600 text-white shadow-md shadow-stemBlue-600/20'
+                  ? 'bg-sky-600 text-white shadow-sm'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
@@ -191,71 +192,73 @@ export function SchedulesTab({
         </div>
       </div>
 
-      {/* Result count */}
-      <div className="flex items-center gap-2">
-        <Clock className="w-3.5 h-3.5 text-slate-400" />
-        <span className="text-xs font-semibold text-slate-500">
-          Hiển thị {filtered.length} / {totalCount} lịch
-        </span>
-      </div>
-
-      {/* Main content grid */}
-      <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-4">
-          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <CalendarDays className="text-stemBlue-600 w-5 h-5" />
-            Sự kiện sắp tới
-          </h3>
-          <div className="space-y-4">
-            {filtered.length === 0 ? (
-              <div className="text-center py-12 text-slate-400 font-medium">Không tìm thấy lịch hoạt động phù hợp.</div>
-            ) : (
-              filtered.map((sc) => (
-                <div
-                  key={sc.id}
-                  className="bg-white/70 border border-slate-200/60 p-5 rounded-2xl shadow-sm hover:shadow-md transition backdrop-blur-sm"
-                >
-                  <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <span className="bg-stemBlue-100 text-stemBlue-700 text-xs font-bold px-2.5 py-1 rounded-lg">
-                      {sc.date}
+      {/* Main Grid */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-3.5">
+          {filtered.length === 0 ? (
+            <div className="text-center py-12 bg-slate-50/60 rounded-2xl border border-slate-200/80 text-slate-400 font-medium text-sm">
+              Không tìm thấy lịch hoạt động phù hợp.
+            </div>
+          ) : (
+            filtered.map((sc) => (
+              <div
+                key={sc.id}
+                className="bg-white border border-slate-200/80 p-4 sm:p-5 rounded-2xl shadow-sm hover:shadow-md hover:border-sky-300 transition-all space-y-2.5"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="bg-sky-50 text-sky-700 border border-sky-100 text-xs font-bold px-2.5 py-1 rounded-lg">
+                      📅 {sc.date}
                     </span>
-                    <span className="text-xs font-bold text-slate-500">{sc.time_range}</span>
-                    <StatusBadge status={sc.status} />
+                    {sc.time_range && (
+                      <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-slate-400" /> {sc.time_range}
+                      </span>
+                    )}
                   </div>
-                  <h4 className="font-extrabold text-sm sm:text-base text-slate-900 leading-tight">{sc.title}</h4>
-                  <div className="mt-2 text-xs font-semibold text-slate-500 space-y-0.5">
-                    <p>Phụ trách: <span className="text-slate-800">{sc.instructor}</span></p>
-                    <p>Đối tượng: <span className="text-slate-800">{sc.target_audience}</span></p>
-                  </div>
-                  <p className="text-xs text-slate-600 mt-3 bg-slate-50 p-3 rounded-xl leading-relaxed border border-slate-100/50">
+                  <StatusBadge status={sc.status} />
+                </div>
+
+                <h4 className="font-bold text-sm sm:text-base text-slate-900 leading-snug">{sc.title}</h4>
+
+                <div className="text-xs font-medium text-slate-600 space-y-0.5">
+                  <p>Phụ trách: <span className="font-semibold text-slate-800">{sc.instructor || 'Chưa phân công'}</span></p>
+                  <p>Đối tượng: <span className="font-semibold text-slate-800">{sc.target_audience || 'Toàn trường'}</span></p>
+                </div>
+
+                {sc.description && (
+                  <p className="text-xs text-slate-600 bg-slate-50/80 p-3 rounded-xl leading-relaxed border border-slate-100">
                     {sc.description}
                   </p>
-                  {isAdmin && (
+                )}
+
+                {isAdmin && (
+                  <div className="pt-2 border-t border-slate-100 flex justify-end">
                     <button
                       onClick={() => deleteSchedule(sc.id)}
-                      className="text-rose-500 text-xs font-bold mt-3 flex items-center gap-1 hover:text-rose-700 transition"
+                      className="text-rose-500 text-xs font-bold flex items-center gap-1 hover:text-rose-700 transition cursor-pointer"
                     >
-                      <Trash2 className="w-3.5 h-3.5" /> Xóa lịch sự kiện
+                      <Trash2 className="w-3.5 h-3.5" /> Xóa lịch
                     </button>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
 
-        {/* Inner Rules Column */}
+        {/* Rules Box */}
         <div>
-          <div className="bg-white/80 p-6 rounded-3xl border border-slate-200 shadow-md backdrop-blur-sm space-y-4 sticky top-24">
-            <h3 className="text-md font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-              <ShieldAlert className="text-amber-500 w-5 h-5 animate-pulse" />
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3 sticky top-24">
+            <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2.5 flex items-center gap-2">
+              <ShieldAlert className="text-amber-500 w-4 h-4" />
               Nội quy Phòng STEM Lab
             </h3>
-            <ol className="text-xs sm:text-sm text-slate-600 space-y-3 list-decimal pl-4 leading-relaxed font-medium">
+            <ol className="text-xs text-slate-600 space-y-2.5 list-decimal pl-4 leading-relaxed font-medium">
               <li>Chỉ vào phòng khi có sự hướng dẫn và giám sát của giáo viên phụ trách.</li>
-              <li>Đăng ký mượn thiết bị và linh kiện trực tuyến qua hệ thống web trước.</li>
-              <li>Bảo quản linh kiện cẩn thận, dùng đúng quy cách kỹ thuật.</li>
-              <li>Tuyệt đối không mang linh kiện ra khỏi phòng Lab khi chưa được duyệt.</li>
+              <li>Đăng ký mượn thiết bị trực tuyến trước khi nhận bàn giao.</li>
+              <li>Bảo quản linh kiện cẩn thận, sử dụng đúng tài liệu hướng dẫn kỹ thuật.</li>
+              <li>Tuyệt đối không tự ý mang linh kiện ra khỏi phòng khi chưa duyệt.</li>
               <li>Thu dọn vệ sinh, tắt toàn bộ nguồn điện thiết bị trước khi rời khỏi Lab.</li>
             </ol>
           </div>

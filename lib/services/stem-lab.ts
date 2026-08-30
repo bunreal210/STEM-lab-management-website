@@ -89,73 +89,75 @@ export async function registerStudent(input: {
   dob: string
   phone: string
 }) {
-  const { data, error } = await supabase.auth.signUp({ email: input.email, password: input.password })
-  if (error) return { data: null, error }
-
-  if (data.user) {
-    const profileInsert = await supabase.from('user_profiles').insert({
-      id: data.user.id,
-      name: input.name,
-      class_name: input.className,
-      dob: input.dob || null,
-      role: 'student',
-      phone: input.phone,
-    })
-    if (profileInsert.error) return { data: null, error: profileInsert.error }
-  }
-
-  return { data, error: null }
+  return supabase.auth.signUp({
+    email: input.email,
+    password: input.password,
+    options: {
+      data: {
+        name: input.name,
+        class_name: input.className,
+        dob: input.dob || null,
+        phone: input.phone,
+      },
+    },
+  })
 }
 
 export async function logoutUser() {
   return supabase.auth.signOut()
 }
 
-export async function upsertDevice(payload: Partial<Device> & {
-  name: string
-  category: string
-  code: string
-  total: number
-  available: number
-  status: string
-  description: string
-  image_url: string | null
-}, editId?: string) {
+export async function upsertDevice(
+  payload: Partial<Device> & {
+    name: string
+    category: string
+    code: string
+    total: number
+    available: number
+    status: string
+    description: string
+    image_url: string | null
+  },
+  editId?: string
+) {
   if (editId) {
     return supabase.from('devices').update(payload).eq('id', editId)
   }
   return supabase.from('devices').insert(payload)
 }
 
-export async function deleteRow(table: 'devices' | 'schedules' | 'materials' | 'posts' | 'journal_entries', id: string) {
+export async function deleteRow(
+  table: 'devices' | 'schedules' | 'materials' | 'posts' | 'journal_entries',
+  id: string
+) {
   return supabase.from(table).delete().eq('id', id)
 }
 
 export async function createSchedule(input: {
-  title: FormDataEntryValue | null
-  date: FormDataEntryValue | null
-  time_range: FormDataEntryValue | null
-  instructor: FormDataEntryValue | null
-  target_audience: FormDataEntryValue | null
-  description: FormDataEntryValue | null
+  title: string
+  date: string
+  time_range: string | null
+  instructor: string | null
+  target_audience: string | null
+  description: string | null
 }) {
   return supabase.from('schedules').insert(input)
 }
 
 export async function createMaterial(input: {
-  title: FormDataEntryValue | null
-  type: FormDataEntryValue | null
-  author: FormDataEntryValue | null
-  description: FormDataEntryValue | null
+  title: string
+  type: string
+  author: string | null
+  description: string | null
   url: string
 }) {
   return supabase.from('materials').insert(input)
 }
 
 export async function createPost(input: {
-  title: FormDataEntryValue | null
-  category: FormDataEntryValue | null
-  content: FormDataEntryValue | null
+  title: string
+  category: string
+  content: string
   image_url: string | null
   author: string
 }) {
@@ -185,19 +187,6 @@ export async function updateDeviceAvailability(id: string, available: number) {
   return supabase.from('devices').update({ available }).eq('id', id)
 }
 
-export async function createJournalEntry(input: {
-  date: string
-  time_of_day: string | null
-  type: string
-  title: string
-  content: string | null
-  author: string
-  participants: number
-  status: string
-}) {
-  return supabase.from('journal_entries').insert(input)
-}
-
 export async function createReport(input: {
   device_id: string
   device_name: string
@@ -217,9 +206,9 @@ export async function resolveReport(id: string, note: string) {
 }
 
 export async function sendTelegramMessage(text: string) {
-  const token = localStorage.getItem('tg_bot_token')
-  const chatId = localStorage.getItem('tg_chat_id')
-  const enabled = localStorage.getItem('tg_enabled') === 'true'
+  const token = typeof window !== 'undefined' ? localStorage.getItem('tg_bot_token') : null
+  const chatId = typeof window !== 'undefined' ? localStorage.getItem('tg_chat_id') : null
+  const enabled = typeof window !== 'undefined' ? localStorage.getItem('tg_enabled') === 'true' : false
 
   if (!enabled || !token || !chatId) return
 
@@ -230,18 +219,6 @@ export async function sendTelegramMessage(text: string) {
       body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
     })
   } catch {
-    // Best-effort notification only.
+    // Best-effort notification
   }
-}
-
-export async function getCurrentSessionUser() {
-  const { data } = await supabase.auth.getSession()
-  return data.session?.user ?? null
-}
-
-export async function onAuthStateChange(handler: (user: User | null) => void) {
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-    handler(session?.user ?? null)
-  })
-  return subscription
 }

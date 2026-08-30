@@ -6,6 +6,10 @@ import type { User } from '@supabase/supabase-js'
 import type { Device, Schedule, Material, Post, Loan, JournalEntry, DeviceReport, UserProfile, Tab } from '@/lib/types'
 import { Dialog as UiDialog } from '@/components/ui/dialog'
 
+// Layout components
+import { AppHeader } from '@/components/layout/app-header'
+import { AppFooter } from '@/components/layout/app-footer'
+
 // Feature components
 import { HomeTab } from '@/components/features/home-tab'
 import { DevicesTab } from '@/components/features/devices-tab'
@@ -27,12 +31,8 @@ import { PostModal } from '@/components/modals/post-modal'
 import { JournalModal } from '@/components/modals/journal-modal'
 import { ReportModal } from '@/components/modals/report-modal'
 import { FullPostModal } from '@/components/modals/full-post-modal'
-import { TelegramModal } from '@/components/modals/telegram-modal'
-
-import {
-  Zap, Moon, Sun, Menu, X, ArrowLeftRight, TriangleAlert, Settings, LogOut,
-  Shield, Send, Bell, PackageMinus, UserRound
-} from 'lucide-react'
+import { NotificationModal } from '@/components/modals/notification-modal'
+import { sendNotification } from '@/lib/services/notifications'
 
 export default function App() {
   // ── Auth state
@@ -71,20 +71,12 @@ export default function App() {
   const [journalModalOpen, setJournalModalOpen]     = useState(false)
   const [reportModalOpen, setReportModalOpen]       = useState(false)
   const [fullPost, setFullPost]         = useState<Post | null>(null)
-  const [tgModalOpen, setTgModalOpen]   = useState(false)
-
-  // ── Telegram config (localStorage)
-  const [tgToken, setTgToken] = useState('')
-  const [tgChatId, setTgChatId] = useState('')
-  const [tgEnabled, setTgEnabled] = useState(false)
+  const [notificationModalOpen, setNotificationModalOpen] = useState(false)
 
   // ─── Init ────────────────────────────────────────────────────────────────────
   useEffect(() => {
     document.documentElement.classList.remove('dark')
     localStorage.removeItem('darkMode')
-    setTgToken(localStorage.getItem('tg_bot_token') || '')
-    setTgChatId(localStorage.getItem('tg_chat_id') || '')
-    setTgEnabled(localStorage.getItem('tg_enabled') === 'true')
 
     loadPublicData()
 
@@ -159,22 +151,6 @@ export default function App() {
     setMobileOpen(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
     if (t === 'trang-ca-nhan' && (isAdmin || profile?.role === 'teacher')) loadAdminData()
-  }
-
-
-  // ── Telegram ─────────────────────────────────────────────────────────────────
-  async function sendTelegram(text: string) {
-    const tok = localStorage.getItem('tg_bot_token')
-    const cid = localStorage.getItem('tg_chat_id')
-    const en  = localStorage.getItem('tg_enabled') === 'true'
-    if (!en || !tok || !cid) return
-    try {
-      await fetch(`https://api.telegram.org/bot${tok}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: cid, text, parse_mode: 'HTML' }),
-      })
-    } catch {}
   }
 
   // ─── AUTH ────────────────────────────────────────────────────────────────────
@@ -278,14 +254,32 @@ export default function App() {
   async function handleScheduleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
+    const title = fd.get('title') as string
+    const date = fd.get('date') as string
+    const timeRange = fd.get('time_range') as string
+    const instructor = (fd.get('instructor') as string) || profile?.name || 'Chưa phân công'
+    const target = fd.get('target') as string
+    const description = fd.get('description') as string
+
     const { error } = await supabase.from('schedules').insert({
-      title: fd.get('title'), date: fd.get('date'),
-      time_range: fd.get('time_range'), instructor: fd.get('instructor'),
-      target_audience: fd.get('target'), description: fd.get('description'),
+      title, date, time_range: timeRange, instructor,
+      target_audience: target, description,
     })
     if (error) { showDialog('Lỗi', error.message, false); return }
     setScheduleModalOpen(false)
     showDialog('Xong', 'Đã thêm lịch hoạt động mới.')
+    
+    sendNotification('schedule_created', {
+      title: '📅 Lịch hoạt động STEM mới',
+      details: {
+        'Nội dung': title,
+        'Ngày': date,
+        'Thời gian': timeRange,
+        'Giáo viên phụ trách': instructor,
+        'Đối tượng': target,
+      },
+      note: description,
+    })
     loadPublicData()
   }
 
@@ -320,14 +314,27 @@ export default function App() {
   async function handlePostSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
+    const title = fd.get('title') as string
+    const category = fd.get('category') as string
+    const author = profile?.name || 'Ban Quản trị'
+
     const { error } = await supabase.from('posts').insert({
-      title: fd.get('title'), category: fd.get('category'),
+      title, category,
       content: fd.get('content'), image_url: (fd.get('image_url') as string) || null,
-      author: profile?.name || 'Admin',
+      author,
     })
     if (error) { showDialog('Lỗi', error.message, false); return }
     setPostModalOpen(false)
     showDialog('Thành công', 'Đã đăng bài viết mới.')
+
+    sendNotification('post_created', {
+      title: '📰 Bài viết / Tin tức mới',
+      details: {
+        'Tiêu đề': title,
+        'Chuyên mục': category,
+        'Người đăng': author,
+      },
+    })
     loadPublicData()
   }
 
@@ -353,13 +360,25 @@ export default function App() {
       user_id: authUser.id, user_name: profile.name || '', class_name: profile.class_name,
       phone: profile.phone, device_id: devId, device_name: dev.name,
       quantity: qty, return_date: fd.get('return_date') as string,
-      purpose: fd.get('purpose') as string, status: 'Chờ duyệt',
+      purpose: fd.get('purpose') as string, status: 'Chờ duyệt' as const,
     }
     const { error } = await supabase.from('loans').insert(loan)
     if (error) { showDialog('Lỗi', error.message, false); return }
 
     showDialog('Đăng ký thành công', 'Phiếu mượn đã gửi cho Admin. Vui lòng chờ phê duyệt.')
-    sendTelegram(`📦 <b>Yêu cầu mượn thiết bị mới!</b>\n👤 ${profile.name} (${profile.class_name})\n🔧 ${dev.name} x${qty}\n📅 Trả: ${loan.return_date}\n📝 ${loan.purpose}`)
+    
+    sendNotification('borrow_request', {
+      title: '📦 Yêu cầu mượn thiết bị mới',
+      details: {
+        'Học sinh / Giáo viên': `${profile.name} (${profile.class_name || 'Lab User'})`,
+        'Số điện thoại': profile.phone || 'Chưa cập nhật',
+        'Thiết bị': dev.name,
+        'Số lượng mượn': `${qty} cái/bộ`,
+        'Hạn hẹn trả': loan.return_date,
+      },
+      note: loan.purpose,
+    })
+
     loadUserData(authUser.id)
     ;(e.target as HTMLFormElement).reset()
   }
@@ -372,7 +391,16 @@ export default function App() {
     await supabase.from('loans').update({ status: 'Đang mượn' }).eq('id', id)
     await supabase.from('devices').update({ available: dev.available - ln.quantity }).eq('id', dev.id)
     showDialog('Đã duyệt', 'Xuất kho thành công.')
-    sendTelegram(`✅ <b>Đã duyệt phiếu mượn</b>\n👤 ${ln.user_name}\n🔧 ${ln.device_name} x${ln.quantity}`)
+
+    sendNotification('borrow_approved', {
+      title: '✅ Đã duyệt phiếu mượn thiết bị',
+      details: {
+        'Người mượn': ln.user_name,
+        'Thiết bị bàn giao': `${ln.device_name} (x${ln.quantity})`,
+        'Người phê duyệt': profile?.name || 'Admin',
+      },
+    })
+
     loadAdminData(); loadPublicData()
   }
 
@@ -390,6 +418,17 @@ export default function App() {
     await supabase.from('loans').update({ status: 'Đã trả' }).eq('id', id)
     await supabase.from('devices').update({ available: dev.available + ln.quantity }).eq('id', dev.id)
     showDialog('Thành công', 'Đã thu hồi thiết bị về kho.')
+
+    sendNotification('borrow_returned', {
+      title: '🔄 Đã thu hồi / Hoàn trả thiết bị',
+      details: {
+        'Người trả': ln.user_name,
+        'Thiết bị': `${ln.device_name} (x${ln.quantity})`,
+        'Trạng thái kho': 'Đã hoàn tất nhập kho an toàn',
+        'Người tiếp nhận': profile?.name || 'Admin',
+      },
+    })
+
     loadAdminData(); loadPublicData()
   }
 
@@ -419,8 +458,21 @@ export default function App() {
     if (error) { showDialog('Lỗi', error.message, false); return }
     setJournalModalOpen(false)
     showDialog('Đã ghi nhật ký', 'Nhật ký hoạt động đã được lưu thành công.')
-    const roleLabel = journalRole === 'hoc-sinh' ? 'Học sinh' : journalRole === 'giao-vien' ? 'Giáo viên' : 'Quản trị'
-    sendTelegram(`📓 <b>Nhật ký Lab mới (${roleLabel})</b>\n📅 ${entry.date}\n🏷️ ${entry.title}\n✍️ ${entry.author}`)
+    
+    const roleLabel = journalRole === 'hoc-sinh' ? 'Học sinh' : journalRole === 'giao-vien' ? 'Giáo viên' : 'Quản trị viên'
+    sendNotification('journal_created', {
+      title: `📓 Nhật ký phòng Lab mới (${roleLabel})`,
+      details: {
+        'Chủ đề': entry.title as string,
+        'Ngày thực hiện': entry.date as string,
+        'Thời gian': entry.time_of_day as string,
+        'Người thực hiện': entry.author as string,
+        'Lớp / Đối tượng': entry.target_class as string,
+        'Môn học': entry.subject as string,
+      },
+      note: entry.content as string,
+    })
+
     loadPublicData()
   }
 
@@ -448,7 +500,17 @@ export default function App() {
     if (error) { showDialog('Lỗi', error.message, false); return }
     setReportModalOpen(false)
     showDialog('Báo cáo đã gửi', 'Cảm ơn! Admin đã được thông báo và sẽ kiểm tra sớm nhất.')
-    sendTelegram(`🚨 <b>Báo hỏng thiết bị!</b>\n👤 ${profile.name} (${profile.class_name})\n🔧 ${dev?.name}\n⚠️ Mức độ: ${rpt.severity}\n📝 ${rpt.description}`)
+
+    sendNotification('report_created', {
+      title: '🚨 Báo hỏng / Sự cố thiết bị',
+      details: {
+        'Người báo': `${profile.name} (${profile.class_name || 'Lab User'})`,
+        'Thiết bị sự cố': dev?.name || 'Không xác định',
+        'Mức độ': rpt.severity,
+      },
+      note: rpt.description,
+    })
+
     if (authUser) loadUserData(authUser.id)
   }
 
@@ -484,112 +546,21 @@ export default function App() {
       {/* ── Dialog ── */}
       {dialog && <UiDialog title={dialog.title} msg={dialog.msg} ok={dialog.ok} onClose={() => setDialog(null)} />}
 
-      {/* ── TOP BAR ── */}
-      <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white text-xs py-2 px-4 text-center font-semibold flex items-center justify-center gap-2">
-        <Zap className="w-4 h-4 text-yellow-300 fill-yellow-300 animate-pulse" />
-        Chương trình STEM INNOVATION PETROVIETNAM được tài trợ bởi Tập đoàn Công nghiệp – Năng lượng Quốc gia Việt Nam
-      </div>
-
       {/* ── HEADER ── */}
-      {/* ── HEADER ── */}
-      <header className="bg-white/95 backdrop-blur-lg border-b border-slate-200/60 sticky top-0 z-40 shadow-sm transition">
-        <div className="w-full px-4 md:px-8 h-[76px] flex flex-nowrap items-center justify-between gap-4 overflow-hidden">
-          
-          {/* Logo */}
-          <div className="flex flex-shrink-0 items-center gap-2 md:gap-4 cursor-pointer" onClick={() => switchTab('trang-chu')}>
-            <div className="flex items-center gap-1 md:gap-2.5 border-r border-slate-200 pr-2 md:pr-4">
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-xl shadow-sm border border-slate-100 p-0.5">
-                <img src="/assets/images/logo-bdq.jpg" alt="BDQ" className="w-full h-full object-contain" onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
-              </div>
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-xl shadow-sm border border-slate-100 p-0.5">
-                <img src="/assets/images/logo-pvn.png" alt="PVN" className="w-full h-full object-contain" onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
-              </div>
-            </div>
-            <div>
-              <h1 className="font-black text-xs md:text-base text-indigo-950 tracking-tight leading-tight whitespace-nowrap">STEM LABORATORY</h1>
-              <div className="text-[9px] md:text-[11px] font-bold text-slate-500 tracking-wide leading-relaxed pt-0.5 whitespace-nowrap">THPT BẮC ĐÔNG QUAN</div>
-            </div>
-          </div>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex flex-nowrap items-center gap-1 xl:gap-2 flex-shrink min-w-0 overflow-x-auto scrollbar-none">
-            {([
-              ['trang-chu','Trang chủ'],['co-so-vat-chat','Kho Thiết bị'],
-              ['lich-hoc','Lịch hoạt động'],['kho-tai-lieu','Thư viện số'],
-              ['truyen-thong','Tin tức'],['nhat-ky','Nhật ký Lab'],
-            ] as [Tab, string][]).map(([t, label]) => (
-              <button key={t} onClick={() => switchTab(t)}
-                className={`px-2.5 py-1.5 xl:px-4 xl:py-2 rounded-xl text-sm xl:text-base font-bold transition-all whitespace-nowrap ${tab===t ? 'text-stemBlue-700 bg-stemBlue-50 border border-stemBlue-100' : 'text-slate-600 border border-transparent hover:bg-slate-50'}`}>
-                {label}
-              </button>
-            ))}
-            {authUser && !isAdmin && <>
-              <button onClick={() => switchTab('muon-tra')}
-                className={`px-2.5 py-1.5 xl:px-4 xl:py-2 rounded-xl text-sm xl:text-base font-bold border transition-all whitespace-nowrap ${tab==='muon-tra' ? 'bg-stemBlue-50 text-stemBlue-700 border-stemBlue-200' : 'bg-white/50 border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
-                Mượn thiết bị
-              </button>
-              <button onClick={() => switchTab('bao-hong')}
-                className={`px-2.5 py-1.5 xl:px-4 xl:py-2 rounded-xl text-sm xl:text-base font-bold border flex items-center gap-1.5 transition-all whitespace-nowrap ${tab==='bao-hong' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-white/50 border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
-                <TriangleAlert className="w-4 h-4 text-amber-500" /> Báo lỗi
-              </button>
-            </>}
-          </nav>
-
-          {/* Right Actions */}
-          <div className="flex items-center gap-1.5 md:gap-2 flex-shrink-0">
-            {!authUser ? (
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <button onClick={() => { setAuthMode('login'); setAuthOpen(true) }}
-                  className="text-slate-600 hover:text-indigo-600 px-2 py-1.5 text-xs xl:text-sm font-bold transition whitespace-nowrap">Đăng nhập</button>
-                <button onClick={() => { setAuthMode('register'); setAuthOpen(true) }}
-                  className="hidden sm:inline-block bg-stemBlue-600 hover:bg-stemBlue-700 text-white px-3 py-1.5 rounded-xl text-xs xl:text-sm font-bold shadow-sm transition whitespace-nowrap">Đăng ký</button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <button
-                  onClick={() => switchTab('trang-ca-nhan')}
-                  className={`flex items-center gap-2.5 px-3 py-2 md:px-4 md:py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap border ${
-                    tab === 'trang-ca-nhan'
-                      ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-inner'
-                      : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'
-                  }`}
-                >
-                  <div className="w-5.5 h-5.5 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0">
-                    {profile?.name?.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                  <span className="text-xs md:text-sm">Trang cá nhân</span>
-                </button>
-                <button onClick={handleLogout} className="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition shrink-0" title="Đăng xuất">
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-            <button onClick={() => setMobileOpen(!mobileOpen)} className="lg:hidden p-1.5 text-slate-600 hover:bg-slate-100 rounded-xl transition flex-shrink-0">
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation Menu */}
-        {mobileOpen && (
-          <div className="lg:hidden border-t border-slate-100 bg-white/95 backdrop-blur-md px-4 py-3 space-y-1 shadow-lg animate-fade-in">
-            {([['trang-chu','Trang chủ'],['co-so-vat-chat','Kho Thiết bị'],['lich-hoc','Lịch hoạt động'],['kho-tai-lieu','Thư viện số'],['truyen-thong','Tin tức'],['nhat-ky','Nhật ký Lab']] as [Tab,string][]).map(([t,label]) => (
-              <button key={t} onClick={() => switchTab(t)}
-                className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 ${tab === t ? 'bg-indigo-50/50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50'}`}>
-                {label}
-              </button>
-            ))}
-            {authUser && <>
-              <button onClick={() => switchTab('muon-tra')} className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold text-stemBlue-600 bg-stemBlue-50 border border-stemBlue-100 flex items-center gap-2">
-                <ArrowLeftRight className="w-4 h-4" /> Đăng ký Mượn/Trả
-              </button>
-              <button onClick={() => switchTab('bao-hong')} className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-bold text-amber-600 bg-amber-50 border border-amber-100 flex items-center gap-2">
-                <TriangleAlert className="w-4 h-4" /> Báo hỏng Thiết bị
-              </button>
-            </>}
-          </div>
-        )}
-      </header>
+      <AppHeader
+        tab={tab}
+        authUser={authUser}
+        profile={profile}
+        mobileOpen={mobileOpen}
+        isAdmin={isAdmin}
+        onSwitchTab={switchTab}
+        onLogout={handleLogout}
+        onOpenAuth={(mode) => {
+          setAuthMode(mode)
+          setAuthOpen(true)
+        }}
+        onToggleMobile={() => setMobileOpen(!mobileOpen)}
+      />
 
       {/* ── MAIN CONTENT TAB ROUTER ── */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
@@ -700,7 +671,7 @@ export default function App() {
             pendingLoans={pendingLoans}
             activeLoans={activeLoans}
             pendingReports={pendingReports}
-            setTgModalOpen={setTgModalOpen}
+            setNotificationModalOpen={setNotificationModalOpen}
             approveLoan={approveLoan}
             rejectLoan={rejectLoan}
             returnLoan={returnLoan}
@@ -716,35 +687,7 @@ export default function App() {
       </main>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-slate-900 text-white border-t border-slate-800 mt-16 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="space-y-3">
-              <h2 className="font-extrabold text-base">BĐQ STEM LAB <span className="text-[10px] font-bold text-sky-400 ml-1">v2.1</span></h2>
-              <p className="text-slate-400 text-xs leading-relaxed">Không gian học tập, sáng tạo và khám phá hàng đầu dành cho học sinh trường THPT Bắc Đông Quan.</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-200 uppercase tracking-widest mb-4">Danh mục chính</h3>
-              <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
-                {([['co-so-vat-chat','Kho Thiết bị'],['lich-hoc','Lịch hoạt động'],['nhat-ky','Nhật ký Lab'],['kho-tai-lieu','Thư viện số'],['truyen-thong','Tin tức'],['bao-hong','Báo lỗi']] as [Tab, string][]).map(([t, label]) => (
-                  <button key={t} onClick={() => switchTab(t)} className="text-left hover:text-white transition-colors">{label}</button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-200 uppercase tracking-widest mb-4">Thông tin liên hệ</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">Phòng Thực Hành STEM - Trường THPT Bắc Đông Quan</p>
-              <p className="text-xs text-slate-400 mt-1">Email: stemlab.bdq@gmail.com</p>
-              <p className="text-xs text-slate-400">Điện Thoại Liên Hệ: 0984552238 Mrs. Thanh</p>
-            </div>
-          </div>
-          <div className="border-t border-slate-800/80 mt-8 pt-6 text-center text-[11px] text-slate-500">
-            © 2026 STEM Laboratory Management Website. Bản quyền thuộc về nhóm phát triển. <br className="sm:hidden" />
-            Thiết kế bởi <a href="https://www.facebook.com/bunreal210" target="_blank" className="text-slate-400 hover:text-slate-200 transition-colors">Phạm Công Vinh</a>.
-          </div>
-          
-        </div>
-      </footer>
+      <AppFooter onSwitchTab={switchTab} />
 
       {/* ════════════ OVERLAY MODALS ════════════ */}
       
@@ -802,22 +745,10 @@ export default function App() {
         onClose={() => setFullPost(null)}
       />
 
-      <TelegramModal
-        isOpen={tgModalOpen}
-        onClose={() => setTgModalOpen(false)}
-        tgToken={tgToken}
-        setTgToken={setTgToken}
-        tgChatId={tgChatId}
-        setTgChatId={setTgChatId}
-        tgEnabled={tgEnabled}
-        setTgEnabled={setTgEnabled}
-        onSave={() => {
-          localStorage.setItem('tg_bot_token', tgToken)
-          localStorage.setItem('tg_chat_id', tgChatId)
-          localStorage.setItem('tg_enabled', String(tgEnabled))
-          setTgModalOpen(false)
-          showDialog('Cài đặt thành công', 'Cấu hình cảnh báo Telegram Bot đã được cập nhật thành công.')
-        }}
+      <NotificationModal
+        isOpen={notificationModalOpen}
+        onClose={() => setNotificationModalOpen(false)}
+        onSaved={() => showDialog('Cài đặt thành công', 'Cấu hình thông báo đa kênh đã được lưu thành công.')}
       />
 
     </div>

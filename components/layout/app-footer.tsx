@@ -2,45 +2,79 @@
 
 import type { Tab } from '@/lib/types'
 
-export function AppFooter({ onSwitchTab }: { onSwitchTab: (tab: Tab) => void }) {
+interface AppFooterProps {
+  onSwitchTab: (tab: Tab) => void
+}
+
+const FOOTER_NAVIGATION_LINKS: Array<[Tab, string]> = [
+  ['co-so-vat-chat', 'Kho Thiết bị'],
+  ['lich-hoc', 'Lịch hoạt động'],
+  ['nhat-ky', 'Nhật ký Lab'],
+  ['kho-tai-lieu', 'Thư viện số'],
+  ['truyen-thong', 'Tin tức'],
+  ['bao-hong', 'Báo lỗi'],
+]
+
+export function AppFooter({ onSwitchTab }: AppFooterProps) {
   return (
-    <footer className="mt-16 border-t border-slate-800 bg-slate-900 text-white">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+    <footer className="bg-slate-900 text-white border-t border-slate-800 mt-16 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          {/* About Section */}
           <div className="space-y-3">
-            <h2 className="text-base font-extrabold">
-              BĐQ STEM LAB <span className="ml-1 text-[10px] font-bold text-pvn-400">v3.0</span>
+            <h2 className="font-extrabold text-base">
+              BĐQ STEM LAB <span className="text-[10px] font-bold text-sky-400 ml-1">v3.1</span>
             </h2>
-            <p className="text-xs leading-relaxed text-slate-400">
-              Không gian ươm mầm tài năng sáng tạo công nghệ, lập trình, khoa học của trường THPT Bắc Đông Quan.
+            <p className="text-slate-400 text-xs leading-relaxed">
+              Không gian học tập, sáng tạo và khám phá hàng đầu dành cho học sinh trường THPT Bắc Đông Quan.
             </p>
           </div>
+
+          {/* Quick Links Section */}
           <div>
-            <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-slate-200">Điều hướng</h3>
+            <h3 className="text-sm font-bold text-slate-200 uppercase tracking-widest mb-4">
+              Danh mục chính
+            </h3>
             <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
-              {([
-                ['co-so-vat-chat', 'Kho Thiết bị'],
-                ['lich-hoc', 'Lịch hoạt động'],
-                ['nhat-ky', 'Nhật ký Lab'],
-                ['kho-tai-lieu', 'Thư viện số'],
-                ['truyen-thong', 'Tin tức'],
-                ['bao-hong', 'Báo hỏng'],
-              ] as [Tab, string][]).map(([t, label]) => (
-                <button key={t} onClick={() => onSwitchTab(t)} className="text-left transition-colors hover:text-white">
+              {FOOTER_NAVIGATION_LINKS.map(([tabKey, label]) => (
+                <button
+                  key={tabKey}
+                  onClick={() => onSwitchTab(tabKey)}
+                  className="text-left hover:text-white transition-colors cursor-pointer"
+                >
                   {label}
                 </button>
               ))}
             </div>
           </div>
+
+          {/* Contact Section */}
           <div>
-            <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-slate-200">Liên hệ</h3>
-            <p className="text-xs leading-relaxed text-slate-400">Phòng STEM Lab – THPT Bắc Đông Quan</p>
-            <p className="mt-1 text-xs text-slate-400">Email: stemlab.bdq@gmail.com</p>
-            <p className="text-xs text-slate-400">Điện thoại: 0936984893 – Mr.Vinh</p>
+            <h3 className="text-sm font-bold text-slate-200 uppercase tracking-widest mb-4">
+              Thông tin liên hệ
+            </h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Phòng Thực Hành STEM - Trường THPT Bắc Đông Quan
+            </p>
+            <p className="text-xs text-slate-400 mt-1">Email: bdq.stemlab@gmail.com</p>
+            <p className="text-xs text-slate-400">Điện thoại liên hệ: 0984552238 Mrs. Thanh</p>
           </div>
         </div>
-        <div className="mt-8 border-t border-slate-800 pt-6 text-center text-[11px] text-slate-500">
-          © 2026 STEM LAB Bắc Đông Quan v3.0 — Thiết kế bởi: Phạm Công Vinh | Powered by Next.js + Supabase
+
+        {/* Copyright */}
+        <div className="border-t border-slate-800/80 mt-8 pt-6 text-center text-[11px] text-slate-500">
+          © 2026 STEM Laboratory Management Website. Bản quyền thuộc về trường THPT Bắc Đông Quan. <br className="sm:hidden" />
+          Thiết kế bởi{' '}
+          <a
+            href="https://www.facebook.com/bunreal210"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-slate-400 hover:text-slate-200 transition-colors underline"
+          >
+            Phạm Công Vinh
+          </a>
+          .
         </div>
       </div>
     </footer>
