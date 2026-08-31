@@ -122,6 +122,13 @@ export function BorrowTab({
                     type="date"
                     name="return_date"
                     required
+                    min={(() => {
+                      const d = new Date()
+                      const y = d.getFullYear()
+                      const m = String(d.getMonth() + 1).padStart(2, '0')
+                      const day = String(d.getDate()).padStart(2, '0')
+                      return `${y}-${m}-${day}`
+                    })()}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-sky-500 focus:outline-none transition cursor-pointer"
                   />
                 </div>

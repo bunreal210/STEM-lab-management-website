@@ -91,15 +91,14 @@ export function JournalModal({ isOpen, onClose, onSubmit, userRole, activeJourna
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Buổi</label>
-              <select
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Giờ học</label>
+              <input
                 name="time"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none transition"
-              >
-                <option>Sáng</option>
-                <option>Chiều</option>
-                <option>Tối</option>
-              </select>
+                type="time"
+                required
+                defaultValue="08:00"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none transition cursor-pointer"
+              />
             </div>
           </div>
 

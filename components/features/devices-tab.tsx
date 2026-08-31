@@ -1,6 +1,6 @@
 'use client'
 
-import { Search, PlusCircle, MapPin, Lock, Edit, Trash, ArrowLeftRight, Cpu, PackageCheck } from 'lucide-react'
+import { Search, PlusCircle, MapPin, Lock, Edit, Trash, ArrowLeftRight, Cpu, PackageCheck, FolderCog } from 'lucide-react'
 import { StatusBadge } from '@/components/ui/badges'
 import type { Device, Tab } from '@/lib/types'
 
@@ -19,6 +19,8 @@ interface DevicesTabProps {
   setEditDevice: (d: Device | null) => void
   deleteDevice: (id: string) => void
   switchTab: (t: Tab) => void
+  categories: string[]
+  setCategoryManagerOpen: (val: boolean) => void
 }
 
 export function DevicesTab({
@@ -36,6 +38,8 @@ export function DevicesTab({
   setEditDevice,
   deleteDevice,
   switchTab,
+  categories,
+  setCategoryManagerOpen,
 }: DevicesTabProps) {
   return (
     <section className="space-y-6 animate-fade-in">
@@ -49,15 +53,23 @@ export function DevicesTab({
           <p className="text-xs sm:text-sm text-slate-500 mt-1">Tra cứu số lượng trong kho và đăng ký mượn thiết bị phòng Lab.</p>
         </div>
         {isAdmin && (
-          <button
-            onClick={() => {
-              setEditDevice(null)
-              setDeviceModalOpen(true)
-            }}
-            className="bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl shadow-sm hover:shadow transition flex items-center gap-2 cursor-pointer"
-          >
-            <PlusCircle className="w-4 h-4" /> Thêm Linh Kiện
-          </button>
+          <div className="flex gap-2 shrink-0">
+            <button
+              onClick={() => setCategoryManagerOpen(true)}
+              className="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl shadow-2xs transition flex items-center gap-2 cursor-pointer"
+            >
+              <FolderCog className="w-4 h-4 text-slate-600" /> Quản lý danh mục
+            </button>
+            <button
+              onClick={() => {
+                setEditDevice(null)
+                setDeviceModalOpen(true)
+              }}
+              className="bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl shadow-sm hover:shadow transition flex items-center gap-2 cursor-pointer"
+            >
+              <PlusCircle className="w-4 h-4" /> Thêm Linh Kiện
+            </button>
+          </div>
         )}
       </div>
 
@@ -79,10 +91,11 @@ export function DevicesTab({
           className="w-full md:w-60 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500 transition cursor-pointer text-slate-700"
         >
           <option value="all">📁 Tất cả danh mục</option>
-          <option value="Robotics">🤖 Robotics & Cơ khí</option>
-          <option value="Vi điều khiển">⚡ Mạch & Vi điều khiển</option>
-          <option value="In 3D">🖨️ Thiết bị In 3D</option>
-          <option value="Đo lường">📏 Dụng cụ Đo lường</option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              📦 {cat}
+            </option>
+          ))}
         </select>
       </div>
 

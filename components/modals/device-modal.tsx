@@ -8,6 +8,7 @@ interface DeviceModalProps {
   onClose: () => void
   editDevice: Device | null
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void
+  categories: string[]
 }
 
 export function DeviceModal({
@@ -15,6 +16,7 @@ export function DeviceModal({
   onClose,
   editDevice,
   onSubmit,
+  categories,
 }: DeviceModalProps) {
   if (!isOpen) return null
 
@@ -48,10 +50,10 @@ export function DeviceModal({
               <select
                 name="category"
                 defaultValue={editDevice?.category || 'Vi điều khiển'}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-stemBlue-500 focus:outline-none transition"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none transition cursor-pointer text-slate-800 font-medium"
               >
-                {['Vi điều khiển', 'Robotics', 'In 3D', 'Đo lường', 'Khác'].map((c) => (
-                  <option key={c}>{c}</option>
+                {categories.map((c) => (
+                  <option key={c} value={c}>{c}</option>
                 ))}
               </select>
             </div>

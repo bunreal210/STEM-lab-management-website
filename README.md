@@ -1,9 +1,9 @@
-# 🔬 STEM Lab – THPT Bắc Đông Quan (v4.0)
+# 🔬 STEM Lab – THPT Bắc Đông Quan (v5.0)
 
 > **Hệ thống Quản lý Phòng Thực hành STEM, Nghiên cứu Khoa học Kỹ thuật & FabLab**  
 > Thuộc chương trình **STEM INNOVATION PETROVIETNAM** – Tài trợ bởi Tập đoàn Công nghiệp – Năng lượng Quốc gia Việt Nam.
 
-[![Version](https://img.shields.io/badge/version-4.0.0-blue.svg)](https://github.com/bunreal210/STEM-lab-management-website)
+[![Version](https://img.shields.io/badge/version-5.0.0-blue.svg)](https://github.com/bunreal210/STEM-lab-management-website)
 [![Next.js](https://img.shields.io/badge/Next.js-16.0-black.svg)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-18-61dafb.svg)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8.svg)](https://tailwindcss.com/)
@@ -14,7 +14,7 @@
 
 ## 🖥️ Giới thiệu Tổng quan
 
-**STEM Lab BDQ v4.0** là nền tảng quản lý phòng thực hành và trung tâm chế tạo kỹ thuật số dành cho cán bộ, giáo viên và học sinh trường **THPT Bắc Đông Quan**. Hệ thống cung cấp giải pháp chuyển đổi số toàn diện:
+**STEM Lab BDQ v5.0** là nền tảng quản lý phòng thực hành và trung tâm chế tạo kỹ thuật số dành cho cán bộ, giáo viên và học sinh trường **THPT Bắc Đông Quan**. Hệ thống cung cấp giải pháp chuyển đổi số toàn diện:
 
 - 🧰 Quản lý thiết bị, linh kiện, cảm biến và máy in 3D trong kho.
 - 📦 Lập phiếu mượn/trả đồ trực tuyến có bộ lọc và tìm kiếm nhanh.
@@ -176,6 +176,46 @@ npm run build
 
 ---
 
+## 📁 Khởi tạo Bảng Danh mục Thiết bị (Cần thiết cho tính năng Danh mục tùy chỉnh)
+
+Để lưu trữ danh sách danh mục thiết bị do Admin tự cấu hình, vui lòng chạy đoạn mã SQL này trong **Supabase Dashboard &rarr; SQL Editor &rarr; New Query**:
+
+```sql
+-- Tạo bảng danh mục thiết bị
+CREATE TABLE IF NOT EXISTS public.device_categories (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Bật bảo mật hàng (RLS)
+ALTER TABLE public.device_categories ENABLE ROW LEVEL SECURITY;
+
+-- Tạo chính sách phân quyền SELECT (Công khai)
+CREATE POLICY "Allow public read" ON public.device_categories 
+  FOR SELECT USING (true);
+
+-- Tạo chính sách phân quyền ALL (Chỉ Admin)
+CREATE POLICY "Allow admin all" ON public.device_categories 
+  FOR ALL USING (
+    EXISTS (
+      SELECT 1 FROM public.user_profiles
+      WHERE user_profiles.id = auth.uid() AND user_profiles.role = 'admin'
+    )
+  );
+
+-- Thêm các danh mục mặc định ban đầu
+INSERT INTO public.device_categories (name) VALUES 
+  ('Vi điều khiển'),
+  ('Robotics'),
+  ('In 3D'),
+  ('Đo lường'),
+  ('Khác')
+ON CONFLICT (name) DO NOTHING;
+```
+
+---
+
 ## 📋 Lịch sử Phiên bản (Changelog)
 
 | Phiên bản | Ngày phát hành | Điểm nổi bật |
@@ -184,7 +224,8 @@ npm run build
 | [v2.0](./changelog/v2.0.md) | 2026-06-18 | Tái cấu trúc component modular, bổ sung UI Glassmorphism |
 | [v3.0](./changelog/v3.0.md) | 2026-06-25 | Nâng cấp phông chữ tiếng Việt chuẩn, sổ nhật ký phân quyền 3 vai trò |
 | [v3.1](./changelog/v3.1.md) | 2026-07-01 | Gộp Trang cá nhân & Trung tâm Quản trị, nâng cấp Header 1 dòng |
-| [**v4.0**](./changelog/v4.0.md) | **2026-08-31** | **Lịch hoạt động dạng Cuốn Lịch (tô đỏ ngày có lịch), tích hợp FabLab BDQ, thông báo đa kênh (Telegram/Discord/Zalo), xuất báo cáo PDF/CSV, tinh gọn bỏ tab Tin tức** |
+| [v4.0](./changelog/v4.0.md) | 2026-08-31 | Lịch hoạt động dạng Cuốn Lịch (tô đỏ ngày có lịch), tích hợp FabLab BDQ, thông báo đa kênh (Telegram/Discord/Zalo), xuất báo cáo PDF/CSV, tinh gọn bỏ tab Tin tức |
+| [**v5.0**](./changelog/v5.0.md) | **2026-08-31** | **Tích hợp Đăng nhập Xã hội (Google, Facebook, GitHub), bắt buộc bổ sung SĐT & Lớp khi đăng ký mạng xã hội, thông báo Email/Zalo riêng cho học sinh khi duyệt mượn/trả, quản lý danh mục thiết bị động cho Admin** |
 
 ---
 
@@ -193,5 +234,5 @@ npm run build
 - **Thiết kế & Vận hành:** [Phạm Công Vinh](https://www.facebook.com/bunreal210)
 - **Đơn vị phát triển:** Phòng STEM Lab – **Trường THPT Bắc Đông Quan**
 - **Đơn vị tài trợ:** **Tập đoàn Công nghiệp – Năng lượng Quốc gia Việt Nam (PetroVietnam)**
-- **Phiên bản:** **v4.0.0** (Cập nhật tháng 08/2026)
+- **Phiên bản:** **v5.0.0** (Cập nhật tháng 08/2026)
 - **Giấy phép:** Bản quyền nội bộ phục vụ công tác giảng dạy và học tập tại trường THPT Bắc Đông Quan.

@@ -19,8 +19,8 @@ interface JournalTabProps {
 }
 
 const SUB_TABS: { key: JournalRole; label: string; icon: any; desc: string }[] = [
-  { key: 'hoc-sinh', label: 'Nhật ký học sinh', icon: GraduationCap, desc: 'Ghi chép và báo cáo kết quả sau buổi thực hành' },
-  { key: 'giao-vien', label: 'Đánh giá giáo viên', icon: UserCheck, desc: 'Nhận xét, đánh giá chất lượng và xếp sao buổi học' },
+  { key: 'hoc-sinh', label: 'Nhật ký học sinh', icon: GraduationCap, desc: 'Ghi chép và báo cáo kết quả sau giờ thực hành' },
+  { key: 'giao-vien', label: 'Đánh giá giáo viên', icon: UserCheck, desc: 'Nhận xét, đánh giá chất lượng và xếp sao giờ học' },
   { key: 'quan-tri', label: 'Tình trạng phòng máy', icon: Building2, desc: 'Ghi nhận kiểm kê tình trạng thiết bị & phòng Lab' },
 ]
 
@@ -107,7 +107,7 @@ export function JournalTab({
             <NotebookPen className="w-6 h-6 text-sky-600" />
             Nhật Ký Phòng Thực Hành STEM
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">Sổ nhật ký điện tử theo dõi từng buổi học, đánh giá giáo viên và kiểm kê thiết bị.</p>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">Sổ nhật ký điện tử theo dõi từng giờ học, đánh giá giáo viên và kiểm kê thiết bị.</p>
         </div>
         {canWrite && (
           <button

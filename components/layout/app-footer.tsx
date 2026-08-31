@@ -24,7 +24,7 @@ export function AppFooter({ onSwitchTab }: AppFooterProps) {
           {/* About Section */}
           <div className="space-y-3">
             <h2 className="font-extrabold text-base">
-              BĐQ STEM LAB <span className="text-[10px] font-bold text-sky-400 ml-1">v4.0</span>
+              BĐQ STEM LAB <span className="text-[10px] font-bold text-sky-400 ml-1">v5.0</span>
             </h2>
             <p className="text-slate-400 text-xs leading-relaxed">
               Không gian học tập, sáng tạo và khám phá hàng đầu dành cho học sinh trường THPT Bắc Đông Quan.
