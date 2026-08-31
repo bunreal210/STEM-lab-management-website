@@ -30,7 +30,7 @@ import { JournalModal } from '@/components/modals/journal-modal'
 import { ReportModal } from '@/components/modals/report-modal'
 import { NotificationModal } from '@/components/modals/notification-modal'
 import { CompleteProfileModal } from '@/components/modals/complete-profile-modal'
-import { sendNotification } from '@/lib/services/notifications'
+import { sendNotification, notifyStudent } from '@/lib/services/notifications'
 
 export default function App() {
   // ── Auth state
@@ -111,6 +111,13 @@ export default function App() {
     ])
     if (profRes.data) {
       setProfile(profRes.data)
+      // Tự động đồng bộ email vào user_profiles
+      const sessionUser = authUser
+      if (sessionUser && sessionUser.id === uid && (!profRes.data.email || profRes.data.email !== sessionUser.email)) {
+        const emailVal = sessionUser.email || ''
+        await supabase.from('user_profiles').update({ email: emailVal }).eq('id', uid)
+        setProfile({ ...profRes.data, email: emailVal })
+      }
     } else {
       // Tự động khởi tạo profile cho người dùng OAuth lần đầu đăng nhập
       const { data: { user } } = await supabase.auth.getUser()
@@ -124,6 +131,7 @@ export default function App() {
           class_name: 'Chưa cập nhật',
           phone: '',
           dob: null,
+          email: user.email || '',
           created_at: new Date().toISOString(),
         }
         await supabase.from('user_profiles').upsert(newProf)
@@ -395,6 +403,26 @@ export default function App() {
       },
     })
 
+    // Gửi thông báo trực tiếp đến học sinh qua Email và Zalo (tự động bỏ qua nếu không có Email/SĐT)
+    if (ln.user_id) {
+      supabase.from('user_profiles').select('email, phone, name').eq('id', ln.user_id).maybeSingle().then(({ data: stProf }) => {
+        if (stProf) {
+          notifyStudent(
+            stProf,
+            '✅ Yêu cầu mượn thiết bị đã được duyệt',
+            `Yêu cầu mượn thiết bị "${ln.device_name}" của bạn đã được ban quản trị phê duyệt thành công. Vui lòng đến nhận thiết bị tại phòng Lab.`,
+            {
+              'Người nhận': ln.user_name,
+              'Thiết bị bàn giao': `${ln.device_name} (x${ln.quantity})`,
+              'Ngày mượn': new Date(ln.created_at).toLocaleDateString('vi-VN'),
+              'Hạn trả': ln.return_date ? new Date(ln.return_date).toLocaleDateString('vi-VN') : 'Không quy định',
+              'Mục đích': ln.purpose || 'Không ghi rõ',
+            }
+          )
+        }
+      })
+    }
+
     loadAdminData(); loadPublicData()
   }
 
@@ -422,6 +450,25 @@ export default function App() {
         'Người tiếp nhận': profile?.name || 'Admin',
       },
     })
+
+    // Gửi thông báo hoàn trả thành công trực tiếp đến học sinh qua Email và Zalo (tự động bỏ qua nếu không có Email/SĐT)
+    if (ln.user_id) {
+      supabase.from('user_profiles').select('email, phone, name').eq('id', ln.user_id).maybeSingle().then(({ data: stProf }) => {
+        if (stProf) {
+          notifyStudent(
+            stProf,
+            '🔄 Xác nhận hoàn trả thiết bị thành công',
+            `Thiết bị "${ln.device_name}" bạn mượn đã được hoàn trả về kho và được kiểm duyệt thành công bởi ban quản trị. Phiếu mượn đã hoàn thành.`,
+            {
+              'Người trả': ln.user_name,
+              'Thiết bị hoàn trả': `${ln.device_name} (x${ln.quantity})`,
+              'Ngày xác nhận': new Date().toLocaleDateString('vi-VN'),
+              'Trạng thái kho': 'Đã hoàn trả và nhập kho an toàn',
+            }
+          )
+        }
+      })
+    }
 
     loadAdminData(); loadPublicData()
   }

@@ -431,3 +431,87 @@ export async function testNotificationChannel(
   }
   return { success: false, message: 'Kênh không hợp lệ.' }
 }
+
+/**
+ * Gửi thông báo trực tiếp cho từng học sinh qua Email và Zalo (tự động bỏ qua nếu không có Email/SĐT)
+ */
+export async function notifyStudent(
+  studentProfile: { email?: string; phone?: string | null; name: string | null },
+  title: string,
+  messageText: string,
+  details: Record<string, string | number | undefined | null>
+): Promise<void> {
+  const promises: Promise<any>[] = []
+
+  // 1. Gửi qua Email (nếu học sinh có đăng ký Email)
+  if (studentProfile.email && studentProfile.email.includes('@')) {
+    const emailPromise = fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: studentProfile.email,
+        subject: `[STEM LAB BDQ] ${title}`,
+        html: `
+          <div style="font-family: sans-serif; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; max-width: 600px; color: #1e293b; line-height: 1.6; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+            <div style="display: flex; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 20px;">
+              <span style="font-size: 24px; margin-right: 8px;">🔬</span>
+              <h2 style="color: #0284c7; margin: 0; font-size: 20px; font-weight: 800;">STEM Lab THPT Bắc Đông Quan</h2>
+            </div>
+            
+            <h3 style="color: #0f172a; margin-top: 0; font-size: 16px; font-weight: 700;">${title}</h3>
+            <p style="font-size: 14px; color: #334155;">Chào bạn <strong>${studentProfile.name || 'Thành viên'}</strong>,</p>
+            <p style="font-size: 14px; color: #334155;">${messageText}</p>
+            
+            <div style="background-color: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px; padding: 16px; margin: 20px 0;">
+              <h4 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Chi tiết thông tin:</h4>
+              <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <tbody>
+                  ${Object.entries(details)
+                    .filter(([_, v]) => v !== undefined && v !== null && v !== '')
+                    .map(([k, v]) => `
+                      <tr>
+                        <td style="padding: 6px 0; color: #64748b; font-weight: 600; width: 140px;">${k}:</td>
+                        <td style="padding: 6px 0; color: #1e293b; font-weight: 700;">${v}</td>
+                      </tr>
+                    `).join('')}
+                </tbody>
+              </table>
+            </div>
+            
+            <p style="font-size: 13px; color: #64748b; font-style: italic; margin-top: 24px;">Đây là email tự động từ hệ thống quản lý phòng Lab. Vui lòng không trả lời trực tiếp thư này.</p>
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+            <footer style="font-size: 11px; color: #94a3b8; text-align: center;">
+              🏛 Hệ thống Quản lý STEM Lab & FabLab – Trường THPT Bắc Đông Quan
+            </footer>
+          </div>
+        `,
+      }),
+    }).catch(err => console.warn('Resend email notification failed:', err))
+    promises.push(emailPromise)
+  }
+
+  // 2. Gửi qua Zalo Webhook (nếu có cấu hình Zalo và học sinh có số điện thoại)
+  const config = getNotificationConfig()
+  if (config.zalo.enabled && config.zalo.webhookUrl && studentProfile.phone && studentProfile.phone.trim() !== '') {
+    let plainText = `[STEM LAB BĐQ] ${title}\n${messageText}\n`
+    for (const [key, val] of Object.entries(details)) {
+      if (val !== undefined && val !== null && val !== '') {
+        plainText += `- ${key}: ${val}\n`
+      }
+    }
+    const zaloPromise = fetch(config.zalo.webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source: 'STEM_LAB_BDQ',
+        phone: studentProfile.phone,
+        title,
+        text: plainText,
+        details,
+      }),
+    }).catch(err => console.warn('Student Zalo notification failed:', err))
+    promises.push(zaloPromise)
+  }
+
+  await Promise.all(promises)
+}

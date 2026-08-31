@@ -5,5 +5,6 @@ export interface UserProfile {
   dob: string | null
   role: 'admin' | 'teacher' | 'student'
   phone: string | null
+  email?: string
   created_at: string
 }
