@@ -30,6 +30,7 @@
 
 | Nhóm tính năng | Chi tiết chức năng |
 |---|---|
+| 🔐 **Đăng nhập Xã hội & Xác thực** | Đăng ký & Đăng nhập 1-click qua **Google, Facebook, GitHub** hoặc Email; Phân quyền 3 cấp độ: `student` (học sinh), `teacher` (giáo viên), `admin` (quản trị viên). Tự động tạo hồ sơ thành viên khi đăng nhập lần đầu. |
 | 📅 **Lịch Hoạt Động Cuốn Lịch** | Lưới lịch tháng 7 ngày (T2 &rarr; CN), nút chuyển tháng trước/sau và nút "Hôm nay". **Các ngày có lịch học được đánh dấu màu ĐỎ nổi bật**, bấm vào xem ngay danh sách tiết học, giáo viên phụ trách, lớp học và nội dung thực hành. Hỗ trợ chuyển đổi nhanh giữa dạng *Cuốn Lịch* và dạng *Danh Sách*. |
 | 🌐 **Liên kết FabLab Quốc Tế** | Nút liên kết trực tiếp tới trang [STEM Lab_Bac Dong Quan High School](https://www.fablabs.io/labs/bdqstemlab) trên mạng lưới Fab Foundation toàn cầu ngay tại Banner Trang chủ. |
 | 🧰 **Kho Thiết bị & Linh kiện** | Phân loại theo danh mục (*Robotics, Vi điều khiển, In 3D & Chế tạo, Cảm biến & Module, Thiết bị Đo lường*), theo dõi số lượng tồn/sẵn sàng. |
@@ -161,6 +162,17 @@ Mở trình duyệt truy cập tại: **`http://localhost:3000`**
 ```bash
 npm run build
 ```
+
+---
+
+## 🔑 Hướng dẫn Bật Đăng nhập Google / Facebook / GitHub
+
+Để kích hoạt đăng nhập xã hội qua Supabase:
+1. Truy cập **[Supabase Dashboard](https://supabase.com/dashboard)** &rarr; Chọn dự án &rarr; Vào **Authentication** &rarr; **Providers**.
+2. **Google:** Bật Google Provider, điền `Client ID` và `Client Secret` từ [Google Cloud Console](https://console.cloud.google.com/).
+3. **Facebook:** Bật Facebook Provider, điền `App ID` và `App Secret` từ [Meta for Developers](https://developers.facebook.com/).
+4. **GitHub:** Bật GitHub Provider, điền `Client ID` và `Client Secret` từ [GitHub Developer Settings](https://github.com/settings/developers).
+5. Thêm Redirect URL: `https://your-project.supabase.co/auth/v1/callback` vào mục Authorized Redirect URIs của từng nền tảng.
 
 ---
 

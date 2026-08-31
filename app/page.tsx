@@ -29,6 +29,7 @@ import { MaterialModal } from '@/components/modals/material-modal'
 import { JournalModal } from '@/components/modals/journal-modal'
 import { ReportModal } from '@/components/modals/report-modal'
 import { NotificationModal } from '@/components/modals/notification-modal'
+import { CompleteProfileModal } from '@/components/modals/complete-profile-modal'
 import { sendNotification } from '@/lib/services/notifications'
 
 export default function App() {
@@ -104,11 +105,31 @@ export default function App() {
 
   const loadUserData = async (uid: string) => {
     const [profRes, loansRes, repRes] = await Promise.all([
-      supabase.from('user_profiles').select('*').eq('id', uid).single(),
+      supabase.from('user_profiles').select('*').eq('id', uid).maybeSingle(),
       supabase.from('loans').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
       supabase.from('device_reports').select('*').eq('reporter_id', uid).order('created_at', { ascending: false }),
     ])
-    if (profRes.data) setProfile(profRes.data)
+    if (profRes.data) {
+      setProfile(profRes.data)
+    } else {
+      // Tự động khởi tạo profile cho người dùng OAuth lần đầu đăng nhập
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user && user.id === uid) {
+        const meta = user.user_metadata || {}
+        const fallbackName = meta.full_name || meta.name || meta.user_name || user.email?.split('@')[0] || 'Thành viên Lab'
+        const newProf: UserProfile = {
+          id: user.id,
+          name: fallbackName,
+          role: 'student',
+          class_name: 'Chưa cập nhật',
+          phone: '',
+          dob: null,
+          created_at: new Date().toISOString(),
+        }
+        await supabase.from('user_profiles').upsert(newProf)
+        setProfile(newProf)
+      }
+    }
     if (loansRes.data) setLoans(loansRes.data)
     if (repRes.data) setReports(repRes.data)
   }
@@ -197,6 +218,22 @@ export default function App() {
         'Đăng ký thành công!',
         `Tài khoản của ${name} đã được tạo.\n\nVui lòng kiểm tra hộp thư email ${email} và nhấn link xác nhận để kích hoạt tài khoản.`
       )
+    }
+  }
+
+  async function handleOAuthLogin(provider: 'google' | 'facebook' | 'github') {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: typeof window !== 'undefined' ? window.location.origin : undefined,
+        },
+      })
+      if (error) {
+        showDialog('Đăng nhập thất bại', error.message, false)
+      }
+    } catch (err: any) {
+      showDialog('Lỗi kết nối', err?.message || 'Không thể kết nối đến nhà cung cấp dịch vụ.', false)
     }
   }
 
@@ -644,6 +681,7 @@ export default function App() {
         setMode={setAuthMode}
         onSubmitLogin={handleLoginSubmit}
         onSubmitRegister={handleRegisterSubmit}
+        onOAuthLogin={handleOAuthLogin}
       />
 
       <DeviceModal
@@ -684,6 +722,14 @@ export default function App() {
         isOpen={notificationModalOpen}
         onClose={() => setNotificationModalOpen(false)}
         onSaved={() => showDialog('Cài đặt thành công', 'Cấu hình thông báo đa kênh đã được lưu thành công.')}
+      />
+
+      <CompleteProfileModal
+        isOpen={Boolean(authUser && profile && (profile.class_name === 'Chưa cập nhật' || !profile.phone || profile.phone.trim() === ''))}
+        currentName={profile?.name || 'Thành viên'}
+        onSubmit={async (className, phone, dob) => {
+          await updateProfile(profile?.name || 'Thành viên', className, phone, dob)
+        }}
       />
 
     </div>
