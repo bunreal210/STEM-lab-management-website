@@ -47,15 +47,19 @@ export function DeviceModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Danh mục</label>
-              <select
+              <input
                 name="category"
-                defaultValue={editDevice?.category || 'Vi điều khiển'}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none transition cursor-pointer text-slate-800 font-medium"
-              >
+                required
+                defaultValue={editDevice?.category || ''}
+                list="categories-datalist"
+                placeholder="Chọn hoặc tự nhập danh mục mới..."
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500 focus:outline-none transition text-slate-800 font-medium"
+              />
+              <datalist id="categories-datalist">
                 {categories.map((c) => (
-                  <option key={c} value={c}>{c}</option>
+                  <option key={c} value={c} />
                 ))}
-              </select>
+              </datalist>
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Mã thiết bị</label>

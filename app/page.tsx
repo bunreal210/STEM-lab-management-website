@@ -30,7 +30,6 @@ import { JournalModal } from '@/components/modals/journal-modal'
 import { ReportModal } from '@/components/modals/report-modal'
 import { NotificationModal } from '@/components/modals/notification-modal'
 import { CompleteProfileModal } from '@/components/modals/complete-profile-modal'
-import { CategoryManagerModal } from '@/components/modals/category-manager-modal'
 import { sendNotification, notifyStudent } from '@/lib/services/notifications'
 
 export default function App() {
@@ -68,8 +67,6 @@ export default function App() {
   const [journalModalOpen, setJournalModalOpen]     = useState(false)
   const [reportModalOpen, setReportModalOpen]       = useState(false)
   const [notificationModalOpen, setNotificationModalOpen] = useState(false)
-  const [categories, setCategories] = useState<string[]>(['Vi điều khiển', 'Robotics', 'In 3D', 'Đo lường', 'Khác'])
-  const [categoryManagerOpen, setCategoryManagerOpen] = useState(false)
 
   // ─── Init ────────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -93,33 +90,17 @@ export default function App() {
 
   const loadPublicData = async () => {
     setLoading(true)
-    const [devRes, scRes, matRes, jnRes, catRes] = await Promise.all([
+    const [devRes, scRes, matRes, jnRes] = await Promise.all([
       supabase.from('devices').select('*').order('created_at'),
       supabase.from('schedules').select('*').order('date'),
       supabase.from('materials').select('*').order('created_at'),
       supabase.from('journal_entries').select('*').order('date', { ascending: false }),
-      supabase.from('device_categories').select('name').order('created_at'),
     ])
     if (devRes.data)  setDevices(devRes.data)
     if (scRes.data)   setSchedules(scRes.data)
     if (matRes.data)  setMaterials(matRes.data)
     if (jnRes.data)   setJournal(jnRes.data)
-    if (catRes.data && catRes.data.length > 0) {
-      setCategories(catRes.data.map(c => c.name))
-    }
     setLoading(false)
-  }
-
-  async function handleAddCategory(name: string) {
-    const { error } = await supabase.from('device_categories').insert({ name })
-    if (error) throw error
-    await loadPublicData()
-  }
-
-  async function handleDeleteCategory(name: string) {
-    const { error } = await supabase.from('device_categories').delete().eq('name', name)
-    if (error) throw error
-    await loadPublicData()
   }
 
   const loadUserData = async (uid: string) => {
@@ -605,6 +586,7 @@ export default function App() {
   const filteredMaterials = matFilter === 'all' ? materials : materials.filter(m => m.type === matFilter)
   const myLoans   = loans.filter(l => l.user_id === authUser?.id)
   const myReports = reports.filter(r => r.reporter_id === authUser?.id)
+  const categories = Array.from(new Set(devices.map(d => d.category).filter(Boolean))) as string[]
 
   return (
     <div className="relative flex flex-col min-h-screen bg-slate-50 text-slate-800 transition-colors duration-300">
@@ -665,7 +647,6 @@ export default function App() {
             deleteDevice={deleteDevice}
             switchTab={switchTab}
             categories={categories}
-            setCategoryManagerOpen={setCategoryManagerOpen}
           />
         )}
 
@@ -768,14 +749,6 @@ export default function App() {
         editDevice={editDevice}
         onSubmit={handleDeviceSubmit}
         categories={categories}
-      />
-
-      <CategoryManagerModal
-        isOpen={categoryManagerOpen}
-        onClose={() => setCategoryManagerOpen(false)}
-        categories={categories}
-        onAddCategory={handleAddCategory}
-        onDeleteCategory={handleDeleteCategory}
       />
 
       <ScheduleModal

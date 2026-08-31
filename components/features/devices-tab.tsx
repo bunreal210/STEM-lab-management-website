@@ -20,7 +20,6 @@ interface DevicesTabProps {
   deleteDevice: (id: string) => void
   switchTab: (t: Tab) => void
   categories: string[]
-  setCategoryManagerOpen: (val: boolean) => void
 }
 
 export function DevicesTab({
@@ -39,7 +38,6 @@ export function DevicesTab({
   deleteDevice,
   switchTab,
   categories,
-  setCategoryManagerOpen,
 }: DevicesTabProps) {
   return (
     <section className="space-y-6 animate-fade-in">
@@ -53,23 +51,15 @@ export function DevicesTab({
           <p className="text-xs sm:text-sm text-slate-500 mt-1">Tra cứu số lượng trong kho và đăng ký mượn thiết bị phòng Lab.</p>
         </div>
         {isAdmin && (
-          <div className="flex gap-2 shrink-0">
-            <button
-              onClick={() => setCategoryManagerOpen(true)}
-              className="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl shadow-2xs transition flex items-center gap-2 cursor-pointer"
-            >
-              <FolderCog className="w-4 h-4 text-slate-600" /> Quản lý danh mục
-            </button>
-            <button
-              onClick={() => {
-                setEditDevice(null)
-                setDeviceModalOpen(true)
-              }}
-              className="bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl shadow-sm hover:shadow transition flex items-center gap-2 cursor-pointer"
-            >
-              <PlusCircle className="w-4 h-4" /> Thêm Linh Kiện
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              setEditDevice(null)
+              setDeviceModalOpen(true)
+            }}
+            className="bg-sky-600 hover:bg-sky-700 text-white text-xs sm:text-sm font-bold py-2.5 px-4 rounded-xl shadow-sm hover:shadow transition flex items-center gap-2 cursor-pointer"
+          >
+            <PlusCircle className="w-4 h-4" /> Thêm Linh Kiện
+          </button>
         )}
       </div>
 
