@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Device, Schedule, Material, Post, Loan, JournalEntry, DeviceReport, UserProfile, Tab } from '@/lib/types'
@@ -18,11 +19,11 @@ import { MaterialsTab } from '@/components/features/materials-tab'
 import { JournalTab } from '@/components/features/journal-tab'
 import { BorrowTab } from '@/components/features/borrow-tab'
 import { ReportsTab } from '@/components/features/reports-tab'
-import { AdminTab } from '@/components/features/admin-tab'
 import { ProfileTab } from '@/components/features/profile-tab'
 
 // Modal components
 import { AuthModal } from '@/components/modals/auth-modal'
+import { ResetPasswordModal } from '@/components/modals/reset-password-modal'
 import { DeviceModal } from '@/components/modals/device-modal'
 import { ScheduleModal } from '@/components/modals/schedule-modal'
 import { MaterialModal } from '@/components/modals/material-modal'
@@ -32,7 +33,35 @@ import { NotificationModal } from '@/components/modals/notification-modal'
 import { CompleteProfileModal } from '@/components/modals/complete-profile-modal'
 import { sendNotification, notifyStudent } from '@/lib/services/notifications'
 
+const PATH_TO_TAB: Record<string, Tab> = {
+  '/': 'trang-chu',
+  '/co-so-vat-chat': 'co-so-vat-chat',
+  '/lich-hoc': 'lich-hoc',
+  '/kho-tai-lieu': 'kho-tai-lieu',
+  '/muon-tra': 'muon-tra',
+  '/nhat-ky': 'nhat-ky',
+  '/bao-hong': 'bao-hong',
+  '/admin-panel': 'admin-panel',
+  '/quan-tri': 'admin-panel',
+  '/trang-ca-nhan': 'trang-ca-nhan',
+}
+
+const TAB_TO_PATH: Record<Tab, string> = {
+  'trang-chu': '/',
+  'co-so-vat-chat': '/co-so-vat-chat',
+  'lich-hoc': '/lich-hoc',
+  'kho-tai-lieu': '/kho-tai-lieu',
+  'muon-tra': '/muon-tra',
+  'nhat-ky': '/nhat-ky',
+  'bao-hong': '/bao-hong',
+  'admin-panel': '/admin-panel',
+  'trang-ca-nhan': '/trang-ca-nhan',
+}
+
 export default function App() {
+  const pathname = usePathname()
+  const router = useRouter()
+
   // ── Auth state
   const [authUser, setAuthUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -45,8 +74,10 @@ export default function App() {
   const [journal, setJournal]         = useState<JournalEntry[]>([])
   const [reports, setReports]         = useState<DeviceReport[]>([])
 
+  // ── Active tab derived from URL path
+  const tab: Tab = PATH_TO_TAB[pathname] || 'trang-chu'
+
   // ── UI state
-  const [tab, setTab]                 = useState<Tab>('trang-chu')
   const [mobileOpen, setMobileOpen]   = useState(false)
   const [dialog, setDialog]           = useState<{ title: string; msg: string; ok: boolean } | null>(null)
   const [loading, setLoading]         = useState(true)
@@ -58,8 +89,9 @@ export default function App() {
   const [journalTab, setJournalTab]     = useState<'hoc-sinh' | 'giao-vien' | 'quan-tri'>('hoc-sinh')
 
   // ── Modal state
-  const [authMode, setAuthMode]         = useState<'login' | 'register'>('login')
+  const [authMode, setAuthMode]         = useState<'login' | 'register' | 'forgot' | 'magic'>('login')
   const [authOpen, setAuthOpen]         = useState(false)
+  const [resetPasswordOpen, setResetPasswordOpen] = useState(false)
   const [deviceModalOpen, setDeviceModalOpen] = useState(false)
   const [editDevice, setEditDevice]     = useState<Device | null>(null)
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false)
@@ -79,10 +111,14 @@ export default function App() {
       setAuthUser(session?.user ?? null)
       if (session?.user) loadUserData(session.user.id)
     })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setAuthUser(session?.user ?? null)
       if (session?.user) loadUserData(session.user.id)
       else { setProfile(null); setLoans([]); setReports([]) }
+
+      if (event === 'PASSWORD_RECOVERY') {
+        setResetPasswordOpen(true)
+      }
     })
     return () => subscription.unsubscribe()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -111,7 +147,6 @@ export default function App() {
     ])
     if (profRes.data) {
       setProfile(profRes.data)
-      // Tự động đồng bộ email vào user_profiles
       const sessionUser = authUser
       if (sessionUser && sessionUser.id === uid && (!profRes.data.email || profRes.data.email !== sessionUser.email)) {
         const emailVal = sessionUser.email || ''
@@ -119,7 +154,6 @@ export default function App() {
         setProfile({ ...profRes.data, email: emailVal })
       }
     } else {
-      // Tự động khởi tạo profile cho người dùng OAuth lần đầu đăng nhập
       const { data: { user } } = await supabase.auth.getUser()
       if (user && user.id === uid) {
         const meta = user.user_metadata || {}
@@ -163,15 +197,24 @@ export default function App() {
 
   const isAdmin = profile?.role === 'admin'
 
+  // Trigger admin data when visiting personal/admin tab
+  useEffect(() => {
+    if ((tab === 'trang-ca-nhan' || tab === 'admin-panel') && (isAdmin || profile?.role === 'teacher')) {
+      loadAdminData()
+    }
+  }, [tab, isAdmin, profile, loadAdminData])
+
   function showDialog(title: string, msg: string, ok = true) {
     setDialog({ title, msg, ok })
   }
 
   function switchTab(t: Tab) {
-    setTab(t)
+    const targetPath = TAB_TO_PATH[t] || '/'
     setMobileOpen(false)
+    if (pathname !== targetPath) {
+      router.push(targetPath)
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    if (t === 'trang-ca-nhan' && (isAdmin || profile?.role === 'teacher')) loadAdminData()
   }
 
   // ─── AUTH ────────────────────────────────────────────────────────────────────
@@ -199,7 +242,6 @@ export default function App() {
     const dob = fd.get('dob') as string
     const phone = fd.get('phone') as string
 
-    // Truyền metadata vào signUp – DB trigger sẽ tự tạo profile (tránh lỗi RLS)
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -217,16 +259,76 @@ export default function App() {
     setAuthOpen(false)
 
     if (data.session) {
-      // Email confirmation đang TẮT → đã đăng nhập ngay
       showDialog('Đăng ký thành công!', `Chào mừng ${name}! Tài khoản đã được tạo và đăng nhập.`)
       if (data.user) loadUserData(data.user.id)
     } else {
-      // Email confirmation đang BẬT → yêu cầu xác nhận email
       showDialog(
         'Đăng ký thành công!',
         `Tài khoản của ${name} đã được tạo.\n\nVui lòng kiểm tra hộp thư email ${email} và nhấn link xác nhận để kích hoạt tài khoản.`
       )
     }
+  }
+
+  async function handleForgotSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const fd = new FormData(e.currentTarget)
+    const email = fd.get('resetEmail') as string
+    const redirectTo = typeof window !== 'undefined' ? window.location.origin : undefined
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo,
+    })
+
+    if (error) {
+      showDialog('Gửi email thất bại', error.message, false)
+      return
+    }
+
+    setAuthOpen(false)
+    showDialog(
+      'Đã gửi liên kết khôi phục!',
+      `Vui lòng kiểm tra hộp thư email (${email}) và bấm vào liên kết để đổi mật khẩu mới.`
+    )
+  }
+
+  async function handleMagicLinkSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const fd = new FormData(e.currentTarget)
+    const email = fd.get('magicEmail') as string
+    const emailRedirectTo = typeof window !== 'undefined' ? window.location.origin : undefined
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo,
+      },
+    })
+
+    if (error) {
+      showDialog('Gửi Magic Link thất bại', error.message, false)
+      return
+    }
+
+    setAuthOpen(false)
+    showDialog(
+      'Đã gửi Magic Link!',
+      `Vui lòng mở hộp thư email (${email}) và bấm vào liên kết đăng nhập 1 chạm để truy cập ngay.`
+    )
+  }
+
+  async function handleChangeEmail(newEmail: string) {
+    const { error } = await supabase.auth.updateUser({ email: newEmail })
+    if (error) {
+      throw error
+    }
+  }
+
+  async function handleUpdatePassword(newPassword: string) {
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    if (error) {
+      throw error
+    }
+    showDialog('Thành công!', 'Mật khẩu của bạn đã được cập nhật thành công.')
   }
 
   async function handleOAuthLogin(provider: 'google' | 'facebook' | 'github') {
@@ -413,7 +515,6 @@ export default function App() {
       },
     })
 
-    // Gửi thông báo trực tiếp đến học sinh qua Email và Zalo (tự động bỏ qua nếu không có Email/SĐT)
     if (ln.user_id) {
       supabase.from('user_profiles').select('email, phone, name').eq('id', ln.user_id).maybeSingle().then(({ data: stProf }) => {
         if (stProf) {
@@ -461,7 +562,6 @@ export default function App() {
       },
     })
 
-    // Gửi thông báo hoàn trả thành công trực tiếp đến học sinh qua Email và Zalo (tự động bỏ qua nếu không có Email/SĐT)
     if (ln.user_id) {
       supabase.from('user_profiles').select('email, phone, name').eq('id', ln.user_id).maybeSingle().then(({ data: stProf }) => {
         if (stProf) {
@@ -483,7 +583,7 @@ export default function App() {
     loadAdminData(); loadPublicData()
   }
 
-  // ─── JOURNAL (v3.0 — phân quyền theo vai trò) ──────────────────────────────
+  // ─── JOURNAL ──────────────────────────────────────────────────────────────
   async function handleJournalSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
@@ -701,7 +801,7 @@ export default function App() {
           />
         )}
 
-        {tab === 'trang-ca-nhan' && (
+        {(tab === 'trang-ca-nhan' || tab === 'admin-panel') && (
           <ProfileTab
             profile={profile}
             authUser={authUser}
@@ -711,6 +811,7 @@ export default function App() {
             schedules={schedules}
             devices={devices}
             onUpdateProfile={updateProfile}
+            onChangeEmail={handleChangeEmail}
             pendingLoans={pendingLoans}
             activeLoans={activeLoans}
             pendingReports={pendingReports}
@@ -740,7 +841,15 @@ export default function App() {
         setMode={setAuthMode}
         onSubmitLogin={handleLoginSubmit}
         onSubmitRegister={handleRegisterSubmit}
+        onSubmitForgot={handleForgotSubmit}
+        onSubmitMagic={handleMagicLinkSubmit}
         onOAuthLogin={handleOAuthLogin}
+      />
+
+      <ResetPasswordModal
+        isOpen={resetPasswordOpen}
+        onClose={() => setResetPasswordOpen(false)}
+        onSubmit={handleUpdatePassword}
       />
 
       <DeviceModal

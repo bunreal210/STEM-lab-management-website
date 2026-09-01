@@ -1,9 +1,9 @@
-# 🔬 STEM Lab – THPT Bắc Đông Quan (v5.0)
+# 🔬 STEM Lab – THPT Bắc Đông Quan (v6.0)
 
 > **Hệ thống Quản lý Phòng Thực hành STEM, Nghiên cứu Khoa học Kỹ thuật & FabLab**  
 > Thuộc chương trình **STEM INNOVATION PETROVIETNAM** – Tài trợ bởi Tập đoàn Công nghiệp – Năng lượng Quốc gia Việt Nam.
 
-[![Version](https://img.shields.io/badge/version-5.0.0-blue.svg)](https://github.com/bunreal210/STEM-lab-management-website)
+[![Version](https://img.shields.io/badge/version-6.0.0-blue.svg)](https://github.com/bunreal210/STEM-lab-management-website)
 [![Next.js](https://img.shields.io/badge/Next.js-16.0-black.svg)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-18-61dafb.svg)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8.svg)](https://tailwindcss.com/)
@@ -14,31 +14,75 @@
 
 ## 🖥️ Giới thiệu Tổng quan
 
-**STEM Lab BDQ v5.0** là nền tảng quản lý phòng thực hành và trung tâm chế tạo kỹ thuật số dành cho cán bộ, giáo viên và học sinh trường **THPT Bắc Đông Quan**. Hệ thống cung cấp giải pháp chuyển đổi số toàn diện:
+**STEM Lab BDQ v6.0** là nền tảng quản lý phòng thực hành và trung tâm chế tạo kỹ thuật số dành cho cán bộ, giáo viên và học sinh trường **THPT Bắc Đông Quan**. Hệ thống cung cấp giải pháp chuyển đổi số toàn diện:
 
-- 🧰 Quản lý thiết bị, linh kiện, cảm biến và máy in 3D trong kho.
-- 📦 Lập phiếu mượn/trả đồ trực tuyến có bộ lọc và tìm kiếm nhanh.
-- 📅 **Lịch hoạt động dạng Cuốn Lịch (Calendar View):** Tô đỏ các ngày có lịch học, click xem chi tiết từng tiết học.
-- 🌐 Kết nối mạng lưới chế tạo Fab Foundation quốc tế qua trang FabLab: **[STEM Lab_Bac Dong Quan High School](https://www.fablabs.io/labs/bdqstemlab)**.
-- 📓 **Sổ Nhật ký Phòng Lab Điện tử:** Phân quyền theo 3 vai trò (Học sinh, Giáo viên, Quản trị) kèm xếp sao chất lượng buổi học.
-- 📄 **Xuất Báo cáo Đa định dạng:** Xuất PDF chuyên nghiệp đa trang (kèm logo trường, thời gian, người xuất) và file CSV chuẩn tiếng Việt UTF-8 BOM.
-- 🔔 **Hệ thống Thông báo Đa kênh 100% Miễn phí:** Gửi tin nhắn tức thì qua Telegram Bot, Discord Webhook (Rich Embed), Zalo Webhook, Web Push Trình duyệt và Custom Webhook.
+- 🌐 **Định tuyến URL độc lập (Clean URLs):** Mỗi trang/mục có đường dẫn riêng (`/co-so-vat-chat`, `/muon-tra`, `/lich-hoc`, `/nhat-ky`...), chia sẻ link mượt mà.
+- 🔐 **Xác thực Đa phương thức:** Đăng nhập mật khẩu, Đăng nhập mạng xã hội (Google, Facebook, GitHub), Đăng nhập không mật khẩu (Magic Link) & Khôi phục mật khẩu qua Email.
+- 🧰 **Quản lý Kho & Thiết bị:** Quản lý linh kiện, cảm biến, máy in 3D, hỗ trợ Admin tự tạo và quản lý các danh mục động.
+- 📦 **Mượn/Trả đồ trực tuyến:** Lập phiếu mượn đồ với bộ lọc thiết bị khả dụng; tự động thông báo kết quả duyệt qua Email & Zalo cho học sinh.
+- 📅 **Lịch hoạt động Cuốn Lịch (Calendar View):** Đánh dấu màu ĐỎ các ngày có lịch học, nhấp để xem chi tiết từng tiết học.
+- 🌐 **Mạng lưới FabLab Quốc tế:** Kết nối trực tiếp trang Fab Foundation quốc tế **[STEM Lab_Bac Dong Quan High School](https://www.fablabs.io/labs/bdqstemlab)**.
+- 📓 **Sổ Nhật ký Phòng Lab 3 Phân Hệ:** Phân quyền viết nhật ký theo 3 vai trò (Học sinh, Giáo viên, Quản trị) kèm đánh giá sao.
+- 📄 **Xuất Báo cáo PDF & CSV:** Xuất báo cáo thống kê đa trang chuyên nghiệp kèm logo nhà trường và UTF-8 BOM CSV.
+- 🔔 **Thông Báo Đa Kênh Tự Động:** Tin nhắn tức thì qua Telegram Bot, Discord Webhook, Zalo Webhook, Web Push & Email Transactional.
 
 ---
 
-## ✨ Tính năng Nổi bật trong Phiên bản 4.0
+## 📖 Hướng Dẫn Sử Dụng Website Chi Tiết
+
+### 1. 🎓 Dành cho Học sinh (Student)
+- **Đăng ký / Đăng nhập:**
+  - Nhấn nút **Đăng nhập** ở góc phải thanh Menu. Bạn có thể chọn đăng nhập qua **Google/Facebook/GitHub**, dùng **Email + Mật khẩu** hoặc bấm **"Magic Link"** để nhận liên kết đăng nhập 1 chạm qua email.
+  - Nếu quên mật khẩu, bấm **"Quên mật khẩu?"** và nhập email để nhận liên kết đặt lại mật khẩu mới.
+- **Tra cứu Kho thiết bị (`/co-so-vat-chat`):**
+  - Xem danh sách thiết bị/linh kiện hiện có, số lượng tồn kho và tình trạng sẵn sàng.
+- **Đăng ký mượn thiết bị (`/muon-tra`):**
+  - Chọn thiết bị cần mượn, nhập số lượng, hạn trả và lý do mượn -> Nhấn **Gửi phiếu mượn**.
+  - Theo dõi trạng thái duyệt mượn. Khi phiếu mượn được duyệt/trả, bạn sẽ nhận được thông báo qua Email & Zalo.
+- **Xem Lịch hoạt động (`/lich-hoc`):**
+  - Mở trang lịch để biết các ngày phòng Lab mở cửa, tiết học STEM và các sự kiện sắp diễn ra.
+- **Gửi Báo hỏng sự cố (`/bao-hong`):**
+  - Nếu phát hiện thiết bị bị hỏng hóc hoặc mất mát trong quá trình sử dụng, hãy chọn thiết bị và gửi mô tả sự cố để ban quản trị xử lý.
+- **Quản lý Hồ sơ & Đổi Email (`/trang-ca-nhan`):**
+  - Xem lịch sử mượn trả, nhật ký đã gửi, cập nhật SĐT, lớp học hoặc yêu cầu đổi sang địa chỉ Email mới.
+
+---
+
+### 2. 👩‍🏫 Dành cho Giáo viên (Teacher)
+- **Ghi Sổ Nhật ký Tiết học (`/nhat-ky`):**
+  - Sau mỗi tiết dạy tại phòng STEM, giáo viên chọn tab **Giáo viên**, chọn ngày/giờ dạy, lớp học, môn học và đánh giá sao (1-5 sao) về nề nếp và chất lượng buổi học.
+- **Xem Thống kê & Xuất Báo cáo (`/trang-ca-nhan` -> Xuất Báo cáo):**
+  - Chọn khoảng thời gian (Từ ngày... Đến ngày...) và tích chọn các nội dung muốn xuất -> Xuất file **PDF** chuyên nghiệp hoặc file **CSV** để báo cáo ban giám hiệu.
+- **Theo dõi Lịch dạy (`/lich-hoc`):**
+  - Xem và quản lý các buổi dạy thực hành được phân công.
+
+---
+
+### 3. 🛡️ Dành cho Ban Quản trị (Admin)
+- **Duyệt Mượn / Trả thiết bị (`/admin-panel` hoặc `/trang-ca-nhan`):**
+  - Xem danh sách phiếu chờ duyệt -> Nhấn **Duyệt** (hệ thống tự trừ kho và gửi mail/zalo cho học sinh) hoặc **Từ chối**.
+  - Khi học sinh mang trả thiết bị -> Nhấn **Duyệt Trả** để cộng lại số lượng vào kho.
+- **Quản lý Kho & Thêm Thiết bị mới (`/co-so-vat-chat`):**
+  - Nhấn **+ Nhập thiết bị mới** để bổ sung linh kiện.
+  - Nhấn **⚙️ Quản lý danh mục** để thêm/xóa các loại danh mục thiết bị tùy ý.
+- **Đăng Lịch hoạt động mới (`/lich-hoc`):**
+  - Nhấn **+ Tạo lịch hoạt động** để lên lịch mở cửa phòng Lab hoặc tiết dạy STEM cho các lớp.
+- **Cấu hình Thông báo Đa kênh (`/trang-ca-nhan` -> Cài đặt Thông báo):**
+  - Nhập Bot Token Telegram, Discord Webhook URL hoặc Zalo Webhook để nhận thông báo tự động mỗi khi có học sinh gửi phiếu mượn hoặc báo hỏng.
+
+---
+
+## ✨ Các Tính Năng Nổi Bật v6.0
 
 | Nhóm tính năng | Chi tiết chức năng |
 |---|---|
-| 🔐 **Đăng nhập Xã hội & Xác thực** | Đăng ký & Đăng nhập 1-click qua **Google, Facebook, GitHub** hoặc Email; Phân quyền 3 cấp độ: `student` (học sinh), `teacher` (giáo viên), `admin` (quản trị viên). Tự động tạo hồ sơ thành viên khi đăng nhập lần đầu. |
-| 📅 **Lịch Hoạt Động Cuốn Lịch** | Lưới lịch tháng 7 ngày (T2 &rarr; CN), nút chuyển tháng trước/sau và nút "Hôm nay". **Các ngày có lịch học được đánh dấu màu ĐỎ nổi bật**, bấm vào xem ngay danh sách tiết học, giáo viên phụ trách, lớp học và nội dung thực hành. Hỗ trợ chuyển đổi nhanh giữa dạng *Cuốn Lịch* và dạng *Danh Sách*. |
-| 🌐 **Liên kết FabLab Quốc Tế** | Nút liên kết trực tiếp tới trang [STEM Lab_Bac Dong Quan High School](https://www.fablabs.io/labs/bdqstemlab) trên mạng lưới Fab Foundation toàn cầu ngay tại Banner Trang chủ. |
-| 🧰 **Kho Thiết bị & Linh kiện** | Phân loại theo danh mục (*Robotics, Vi điều khiển, In 3D & Chế tạo, Cảm biến & Module, Thiết bị Đo lường*), theo dõi số lượng tồn/sẵn sàng. |
-| 📦 **Mượn & Trả Thiết bị** | Học sinh đăng ký phiếu mượn với bộ lọc thiết bị khả dụng; Quản trị viên duyệt mượn và duyệt trả 1-click. |
-| 📓 **Nhật Ký Lab 3 Phân Hệ** | <ul><li>**Học sinh:** Báo cáo kết quả và sản phẩm sau buổi thực hành.</li><li>**Giáo viên:** Nhận xét nề nếp và xếp sao (1-5 sao) chất lượng buổi dạy.</li><li>**Quản trị:** Ghi nhận kiểm kê tình trạng máy móc & phòng ốc.</li></ul> |
-| 📄 **Xuất Báo Cáo PDF & CSV** | Tùy chọn xuất từng nội dung hoặc gộp nhiều nội dung: tình trạng phòng, nhật ký mượn/trả, nhật ký báo hỏng, số tiết đã dạy, tổng hợp đánh giá sao. Hỗ trợ xuất file PDF đóng khung đẹp mắt và CSV mở trực tiếp trên Excel. |
-| 🔔 **Thông Báo Tự Động Đa Kênh** | Tích hợp 5 kênh thông báo miễn phí (**Telegram, Discord Webhook, Zalo, Browser Web Push, Custom Webhook**) với 7 bộ lọc sự kiện độc lập. |
-| 🚨 **Báo Hỏng & Sự Cố** | Báo cáo nhanh sự cố linh kiện/thiết bị phân cấp theo mức độ nguy cấp; tự động cảnh báo ban quản trị. |
+| 🌐 **Định Tuyến URL Clean Paths** | Mỗi trang có URL riêng biệt (`/`, `/co-so-vat-chat`, `/lich-hoc`, `/kho-tai-lieu`, `/muon-tra`, `/nhat-ky`, `/bao-hong`, `/admin-panel`, `/trang-ca-nhan`), hỗ trợ chia sẻ link và nút Back/Forward trình duyệt. |
+| 🔐 **Đăng Nhập & Xác Thực Toàn Diện** | Đăng nhập **Google, Facebook, GitHub**, Email/Password, **Magic Link** (không cần mật khẩu) & **Khôi phục mật khẩu** tự động qua email. |
+| ✉️ **Đổi Email Cá Nhân** | Người dùng có thể chủ động thay đổi địa chỉ Email đăng nhập từ trang cá nhân (kèm liên kết xác minh hòm thư mới). |
+| 🗂️ **Quản Lý Danh Mục Động** | Admin tùy chỉnh thêm/xóa danh mục thiết bị ngay trên giao diện web. |
+| 📅 **Lịch Hoạt Động Cuốn Lịch** | Lưới lịch tháng trực quan, **tô đỏ các ngày có lịch**, click xem tiết học và giáo viên phụ trách. |
+| 🔔 **Thông Báo Đa Kênh Tự Động** | Gửi tin nhắn đến Telegram, Discord, Zalo, Browser Web Push và Email giao dịch cho từng học sinh. |
+| 📄 **Xuất Báo Cáo PDF & CSV** | Xuất báo cáo thống kê đa trang đẹp mắt kèm logo trường và file CSV mở trực tiếp trên Excel. |
 
 ---
 
@@ -47,24 +91,28 @@
 ```text
 STEM-lab-management-website/
 ├── .env.local                    # Biến môi trường Supabase (không commit)
-├── .gitignore                    # Danh sách file loại trừ Git
-├── .npmrc                        # Cấu hình legacy-peer-deps
-├── package.json                  # Dependencies (v4.0.0)
-├── README.md                     # Tài liệu giới thiệu & hướng dẫn v4.0
+├── package.json                  # Dependencies (v6.0.0)
+├── README.md                     # Tài liệu giới thiệu & hướng dẫn v6.0
 ├── tailwind.config.ts            # Cấu hình Tailwind CSS
 ├── tsconfig.json                 # Cấu hình TypeScript
 │
 ├── app/
+│   ├── [[...slug]]/
+│   │   └── page.tsx              # Catch-all App Router & SPA Controller chính
+│   ├── api/
+│   │   └── send-email/
+│   │       └── route.ts          # Resend Email Proxy API
 │   ├── favicon.ico               # Favicon STEM Lab
 │   ├── globals.css               # Phông chữ Outfit & Inter, Tailwind directives
-│   ├── layout.tsx                # Root layout & Metadata SEO
-│   └── page.tsx                  # Controller & SPA router chính
+│   └── layout.tsx                # Root layout & Metadata SEO
 │
 ├── changelog/                    # Lịch sử phiên bản
 │   ├── v1.0.md
 │   ├── v2.0.md
 │   ├── v3.0.md
-│   └── v4.0.md                   # Nhật ký phát hành phiên bản 4.0
+│   ├── v4.0.md
+│   ├── v5.0.md
+│   └── v6.0.md                   # Nhật ký phát hành phiên bản 6.0
 │
 ├── components/
 │   ├── features/                 # Các Tab chức năng chính
@@ -74,7 +122,7 @@ STEM-lab-management-website/
 │   │   ├── home-tab.tsx          # Trang chủ, Banner FabLab & lối tắt
 │   │   ├── journal-tab.tsx       # Nhật ký Lab phân quyền 3 vai trò
 │   │   ├── materials-tab.tsx     # Thư viện tài liệu kiến thức số
-│   │   ├── profile-tab.tsx       # Trang cá nhân & trung tâm xuất báo cáo
+│   │   ├── profile-tab.tsx       # Trang cá nhân, Đổi email & xuất báo cáo
 │   │   ├── report-template.tsx   # Khung template xuất file PDF
 │   │   ├── reports-tab.tsx       # Báo hỏng & sự cố kỹ thuật
 │   │   └── schedules-tab.tsx     # Lịch hoạt động dạng Cuốn Lịch (Calendar View)
@@ -84,11 +132,14 @@ STEM-lab-management-website/
 │   │   └── app-footer.tsx        # Footer thông tin nhà trường & bản quyền
 │   │
 │   ├── modals/                   # Các hộp thoại chức năng (Dialogs)
-│   │   ├── auth-modal.tsx        # Đăng nhập / Đăng ký
+│   │   ├── auth-modal.tsx        # Đăng nhập / Đăng ký / Magic Link / Quên mật khẩu
+│   │   ├── reset-password-modal.tsx # Đặt lại mật khẩu mới
+│   │   ├── category-manager-modal.tsx # Quản lý danh mục thiết bị
+│   │   ├── complete-profile-modal.tsx # Cập nhật SĐT & Lớp khi OAuth
 │   │   ├── device-modal.tsx      # Thêm / Chỉnh sửa thiết bị
 │   │   ├── journal-modal.tsx     # Ghi nhật ký phòng máy
 │   │   ├── material-modal.tsx    # Tải lên tài liệu số
-│   │   ├── notification-modal.tsx# Cài đặt Thông báo Đa kênh (Telegram/Discord/Zalo)
+│   │   ├── notification-modal.tsx# Cài đặt Thông báo Đa kênh
 │   │   ├── report-modal.tsx      # Gửi phiếu báo hỏng
 │   │   └── schedule-modal.tsx    # Tạo lịch hoạt động mới
 │   │
@@ -98,20 +149,8 @@ STEM-lab-management-website/
 │
 ├── lib/
 │   ├── models/                   # Type definitions TypeScript
-│   │   ├── content.ts            # Material, JournalEntry
-│   │   ├── inventory.ts          # Device, Loan, DeviceReport
-│   │   ├── tab.ts                # Tab navigation
-│   │   └── user.ts               # UserProfile, UserRole
-│   │
-│   ├── services/                 # Xử lý Logic & Tương tác Cơ sở Dữ liệu
-│   │   ├── notifications.ts      # Multi-channel notification dispatcher
-│   │   └── stem-lab.ts           # Supabase CRUD service layer
-│   │
-│   ├── utils/                    # Thư viện tiện ích
-│   │   ├── date.ts               # Xử lý định dạng ngày giờ tiếng Việt
-│   │   ├── export.ts             # Xuất dữ liệu bảng CSV (UTF-8 BOM)
-│   │   └── pdf-export.ts         # Xuất báo cáo PDF đa trang (jsPDF + html2canvas)
-│   │
+│   ├── services/                 # Business logic & Supabase Services
+│   ├── utils/                    # Tiện ích Date, Export CSV/PDF
 │   ├── supabase.ts               # Supabase Client khởi tạo
 │   └── types.ts                  # Re-export toàn bộ kiểu dữ liệu
 │
@@ -150,6 +189,7 @@ Tạo tệp `.env.local` tại thư mục gốc của dự án:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+RESEND_API_KEY=re_123456789  # (Tùy chọn: Dùng để gửi mail giao dịch cho học sinh)
 ```
 
 ### 3. Khởi chạy Môi trường Phát triển (Dev Server)
@@ -165,57 +205,6 @@ npm run build
 
 ---
 
-## 🔑 Hướng dẫn Bật Đăng nhập Google / Facebook / GitHub
-
-Để kích hoạt đăng nhập xã hội qua Supabase:
-1. Truy cập **[Supabase Dashboard](https://supabase.com/dashboard)** &rarr; Chọn dự án &rarr; Vào **Authentication** &rarr; **Providers**.
-2. **Google:** Bật Google Provider, điền `Client ID` và `Client Secret` từ [Google Cloud Console](https://console.cloud.google.com/).
-3. **Facebook:** Bật Facebook Provider, điền `App ID` và `App Secret` từ [Meta for Developers](https://developers.facebook.com/).
-4. **GitHub:** Bật GitHub Provider, điền `Client ID` và `Client Secret` từ [GitHub Developer Settings](https://github.com/settings/developers).
-5. Thêm Redirect URL: `https://your-project.supabase.co/auth/v1/callback` vào mục Authorized Redirect URIs của từng nền tảng.
-
----
-
-## 📁 Khởi tạo Bảng Danh mục Thiết bị (Cần thiết cho tính năng Danh mục tùy chỉnh)
-
-Để lưu trữ danh sách danh mục thiết bị do Admin tự cấu hình, vui lòng chạy đoạn mã SQL này trong **Supabase Dashboard &rarr; SQL Editor &rarr; New Query**:
-
-```sql
--- Tạo bảng danh mục thiết bị
-CREATE TABLE IF NOT EXISTS public.device_categories (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name TEXT UNIQUE NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Bật bảo mật hàng (RLS)
-ALTER TABLE public.device_categories ENABLE ROW LEVEL SECURITY;
-
--- Tạo chính sách phân quyền SELECT (Công khai)
-CREATE POLICY "Allow public read" ON public.device_categories 
-  FOR SELECT USING (true);
-
--- Tạo chính sách phân quyền ALL (Chỉ Admin)
-CREATE POLICY "Allow admin all" ON public.device_categories 
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM public.user_profiles
-      WHERE user_profiles.id = auth.uid() AND user_profiles.role = 'admin'
-    )
-  );
-
--- Thêm các danh mục mặc định ban đầu
-INSERT INTO public.device_categories (name) VALUES 
-  ('Vi điều khiển'),
-  ('Robotics'),
-  ('In 3D'),
-  ('Đo lường'),
-  ('Khác')
-ON CONFLICT (name) DO NOTHING;
-```
-
----
-
 ## 📋 Lịch sử Phiên bản (Changelog)
 
 | Phiên bản | Ngày phát hành | Điểm nổi bật |
@@ -224,8 +213,9 @@ ON CONFLICT (name) DO NOTHING;
 | [v2.0](./changelog/v2.0.md) | 2026-06-18 | Tái cấu trúc component modular, bổ sung UI Glassmorphism |
 | [v3.0](./changelog/v3.0.md) | 2026-06-25 | Nâng cấp phông chữ tiếng Việt chuẩn, sổ nhật ký phân quyền 3 vai trò |
 | [v3.1](./changelog/v3.1.md) | 2026-07-01 | Gộp Trang cá nhân & Trung tâm Quản trị, nâng cấp Header 1 dòng |
-| [v4.0](./changelog/v4.0.md) | 2026-08-31 | Lịch hoạt động dạng Cuốn Lịch (tô đỏ ngày có lịch), tích hợp FabLab BDQ, thông báo đa kênh (Telegram/Discord/Zalo), xuất báo cáo PDF/CSV, tinh gọn bỏ tab Tin tức |
-| [**v5.0**](./changelog/v5.0.md) | **2026-08-31** | **Tích hợp Đăng nhập Xã hội (Google, Facebook, GitHub), bắt buộc bổ sung SĐT & Lớp khi đăng ký mạng xã hội, thông báo Email/Zalo riêng cho học sinh khi duyệt mượn/trả, quản lý danh mục thiết bị động cho Admin** |
+| [v4.0](./changelog/v4.0.md) | 2026-08-31 | Lịch hoạt động dạng Cuốn Lịch (tô đỏ ngày có lịch), tích hợp FabLab BDQ, thông báo đa kênh (Telegram/Discord/Zalo), xuất báo cáo PDF/CSV |
+| [v5.0](./changelog/v5.0.md) | 2026-08-31 | Tích hợp Đăng nhập Xã hội (Google, Facebook, GitHub), thông báo Email/Zalo riêng cho học sinh khi duyệt mượn/trả, quản lý danh mục thiết bị động |
+| [**v6.0**](./changelog/v6.0.md) | **2026-09-01** | **Chuyển đổi sang hệ thống đường dẫn URL độc lập (Next.js App Router), tích hợp luồng Khôi phục mật khẩu hoàn chỉnh, Đăng nhập Magic Link không cần mật khẩu và Thay đổi địa chỉ Email cá nhân trong Hồ sơ** |
 
 ---
 
@@ -234,5 +224,5 @@ ON CONFLICT (name) DO NOTHING;
 - **Thiết kế & Vận hành:** [Phạm Công Vinh](https://www.facebook.com/bunreal210)
 - **Đơn vị phát triển:** Phòng STEM Lab – **Trường THPT Bắc Đông Quan**
 - **Đơn vị tài trợ:** **Tập đoàn Công nghiệp – Năng lượng Quốc gia Việt Nam (PetroVietnam)**
-- **Phiên bản:** **v5.0.0** (Cập nhật tháng 08/2026)
+- **Phiên bản:** **v6.0.0** (Cập nhật tháng 09/2026)
 - **Giấy phép:** Bản quyền nội bộ phục vụ công tác giảng dạy và học tập tại trường THPT Bắc Đông Quan.

@@ -8,10 +8,12 @@ type OAuthProvider = 'google' | 'facebook' | 'github'
 interface AuthModalProps {
   isOpen: boolean
   onClose: () => void
-  mode: 'login' | 'register'
-  setMode: (m: 'login' | 'register') => void
+  mode: 'login' | 'register' | 'forgot' | 'magic'
+  setMode: (m: 'login' | 'register' | 'forgot' | 'magic') => void
   onSubmitLogin: (e: React.FormEvent<HTMLFormElement>) => void
   onSubmitRegister: (e: React.FormEvent<HTMLFormElement>) => void
+  onSubmitForgot?: (e: React.FormEvent<HTMLFormElement>) => void
+  onSubmitMagic?: (e: React.FormEvent<HTMLFormElement>) => void
   onOAuthLogin: (provider: OAuthProvider) => void
 }
 
@@ -66,6 +68,8 @@ export function AuthModal({
   setMode,
   onSubmitLogin,
   onSubmitRegister,
+  onSubmitForgot,
+  onSubmitMagic,
   onOAuthLogin,
 }: AuthModalProps) {
   const [oauthLoading, setOauthLoading] = useState<OAuthProvider | null>(null)
@@ -85,7 +89,13 @@ export function AuthModal({
         <div className="flex items-center justify-between border-b border-slate-200/60 bg-slate-50/70 px-6 py-4">
           <div>
             <h3 className="text-base sm:text-lg font-black text-slate-900">
-              {mode === 'login' ? 'Đăng Nhập Hệ Thống' : 'Đăng Ký Thành Viên Lab'}
+              {mode === 'login'
+                ? 'Đăng Nhập Hệ Thống'
+                : mode === 'register'
+                ? 'Đăng Ký Thành Viên Lab'
+                : mode === 'magic'
+                ? 'Đăng Nhập Magic Link'
+                : 'Khôi Phục Mật Khẩu'}
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
               Phòng STEM Lab – THPT Bắc Đông Quan
@@ -103,72 +113,78 @@ export function AuthModal({
         <div className="max-h-[82vh] overflow-y-auto p-6 space-y-4">
           
           {/* Mode Switcher Pills */}
-          <div className="flex gap-1 rounded-xl bg-slate-100 p-1 border border-slate-200/60">
-            {(['login', 'register'] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMode(m)}
-                className={`flex-1 rounded-lg py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
-                  mode === m
-                    ? 'bg-white text-sky-700 shadow-xs border border-slate-200'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                {m === 'login' ? 'Đăng nhập' : 'Đăng ký tài khoản'}
-              </button>
-            ))}
-          </div>
+          {mode !== 'forgot' && mode !== 'magic' && (
+            <div className="flex gap-1 rounded-xl bg-slate-100 p-1 border border-slate-200/60">
+              {(['login', 'register'] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMode(m)}
+                  className={`flex-1 rounded-lg py-2 text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                    mode === m
+                      ? 'bg-white text-sky-700 shadow-xs border border-slate-200'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  {m === 'login' ? 'Đăng nhập' : 'Đăng ký tài khoản'}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* ── SOCIAL LOGINS (Google, Facebook, GitHub) ── */}
-          <div className="space-y-2.5">
-            <p className="text-[11px] font-bold uppercase text-slate-400 tracking-wider text-center">
-              Đăng nhập nhanh với
-            </p>
+          {mode !== 'forgot' && mode !== 'magic' && (
+            <div className="space-y-2.5">
+              <p className="text-[11px] font-bold uppercase text-slate-400 tracking-wider text-center">
+                Đăng nhập nhanh với
+              </p>
 
-            <div className="grid grid-cols-3 gap-2">
-              {/* Google */}
-              <button
-                type="button"
-                onClick={() => handleSocialClick('google')}
-                disabled={Boolean(oauthLoading)}
-                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 shadow-2xs transition cursor-pointer disabled:opacity-50"
-              >
-                {oauthLoading === 'google' ? <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-600" /> : <GoogleIcon />}
-                <span>Google</span>
-              </button>
+              <div className="grid grid-cols-3 gap-2">
+                {/* Google */}
+                <button
+                  type="button"
+                  onClick={() => handleSocialClick('google')}
+                  disabled={Boolean(oauthLoading)}
+                  className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 shadow-2xs transition cursor-pointer disabled:opacity-50"
+                >
+                  {oauthLoading === 'google' ? <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-600" /> : <GoogleIcon />}
+                  <span>Google</span>
+                </button>
 
-              {/* Facebook */}
-              <button
-                type="button"
-                onClick={() => handleSocialClick('facebook')}
-                disabled={Boolean(oauthLoading)}
-                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 shadow-2xs transition cursor-pointer disabled:opacity-50"
-              >
-                {oauthLoading === 'facebook' ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1877F2]" /> : <FacebookIcon />}
-                <span>Facebook</span>
-              </button>
+                {/* Facebook */}
+                <button
+                  type="button"
+                  onClick={() => handleSocialClick('facebook')}
+                  disabled={Boolean(oauthLoading)}
+                  className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 shadow-2xs transition cursor-pointer disabled:opacity-50"
+                >
+                  {oauthLoading === 'facebook' ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[#1877F2]" /> : <FacebookIcon />}
+                  <span>Facebook</span>
+                </button>
 
-              {/* GitHub */}
-              <button
-                type="button"
-                onClick={() => handleSocialClick('github')}
-                disabled={Boolean(oauthLoading)}
-                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 shadow-2xs transition cursor-pointer disabled:opacity-50"
-              >
-                {oauthLoading === 'github' ? <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-900" /> : <GithubIcon />}
-                <span>GitHub</span>
-              </button>
+                {/* GitHub */}
+                <button
+                  type="button"
+                  onClick={() => handleSocialClick('github')}
+                  disabled={Boolean(oauthLoading)}
+                  className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-[11px] font-bold text-slate-700 shadow-2xs transition cursor-pointer disabled:opacity-50"
+                >
+                  {oauthLoading === 'github' ? <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-900" /> : <GithubIcon />}
+                  <span>GitHub</span>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Divider */}
-          <div className="relative flex items-center justify-center my-3">
-            <div className="border-t border-slate-200 w-full" />
-            <span className="bg-white px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
-              hoặc qua email
-            </span>
-          </div>
+          {mode !== 'forgot' && mode !== 'magic' && (
+            <div className="relative flex items-center justify-center my-3">
+              <div className="border-t border-slate-200 w-full" />
+              <span className="bg-white px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">
+                hoặc qua email
+              </span>
+            </div>
+          )}
 
           {/* ── EMAIL FORM ── */}
           {mode === 'login' ? (
@@ -190,9 +206,18 @@ export function AuthModal({
               </div>
 
               <div>
-                <label className="mb-1 block text-[11px] font-bold uppercase text-slate-500">
-                  Mật khẩu
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-bold uppercase text-slate-500">
+                    Mật khẩu
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setMode('forgot')}
+                    className="text-[11px] font-bold text-sky-600 hover:text-sky-700 hover:underline cursor-pointer"
+                  >
+                    Quên mật khẩu?
+                  </button>
+                </div>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
@@ -211,6 +236,92 @@ export function AuthModal({
               >
                 <Lock className="w-4 h-4" /> ĐĂNG NHẬP
               </button>
+
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => setMode('magic')}
+                  className="text-xs font-bold text-sky-600 hover:text-sky-700 hover:underline transition cursor-pointer"
+                >
+                  ✨ Đăng nhập không cần mật khẩu (Magic Link)
+                </button>
+              </div>
+            </form>
+          ) : mode === 'forgot' ? (
+            <form onSubmit={onSubmitForgot} className="space-y-3.5">
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Nhập địa chỉ email của bạn. Chúng tôi sẽ gửi một liên kết khôi phục mật khẩu tới hộp thư của bạn.
+              </p>
+              <div>
+                <label className="mb-1 block text-[11px] font-bold uppercase text-slate-500">
+                  Địa chỉ Email
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    name="resetEmail"
+                    type="email"
+                    required
+                    placeholder="example@email.com"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full rounded-xl bg-sky-600 hover:bg-sky-700 py-3 font-bold text-xs sm:text-sm text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-2"
+              >
+                <Mail className="w-4 h-4" /> GỬI LIÊN KẾT KHÔI PHỤC
+              </button>
+
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => setMode('login')}
+                  className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition cursor-pointer"
+                >
+                  ← Quay lại Đăng nhập
+                </button>
+              </div>
+            </form>
+          ) : mode === 'magic' ? (
+            <form onSubmit={onSubmitMagic} className="space-y-3.5">
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Nhập email của bạn để nhận liên kết đăng nhập nhanh 1 chạm mà không cần phải nhớ hay điền mật khẩu.
+              </p>
+              <div>
+                <label className="mb-1 block text-[11px] font-bold uppercase text-slate-500">
+                  Địa chỉ Email
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    name="magicEmail"
+                    type="email"
+                    required
+                    placeholder="example@email.com"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full rounded-xl bg-sky-600 hover:bg-sky-700 py-3 font-bold text-xs sm:text-sm text-white shadow-xs transition cursor-pointer flex items-center justify-center gap-2"
+              >
+                <Mail className="w-4 h-4" /> GỬI MAGIC LINK ĐĂNG NHẬP
+              </button>
+
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => setMode('login')}
+                  className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition cursor-pointer"
+                >
+                  ← Quay lại Đăng nhập bằng Mật khẩu
+                </button>
+              </div>
             </form>
           ) : (
             <form onSubmit={onSubmitRegister} className="space-y-3">

@@ -17,6 +17,7 @@ interface ProfileTabProps {
   schedules: Schedule[]
   devices: Device[]
   onUpdateProfile: (name: string, class_name: string, phone: string, dob: string) => Promise<void>
+  onChangeEmail?: (newEmail: string) => Promise<void>
   // Admin props
   pendingLoans: number
   activeLoans: number
@@ -42,6 +43,7 @@ export function ProfileTab({
   schedules,
   devices,
   onUpdateProfile,
+  onChangeEmail,
   pendingLoans,
   activeLoans,
   pendingReports,
@@ -71,6 +73,12 @@ export function ProfileTab({
   const [editDob, setEditDob] = useState(profile?.dob || '')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+
+  // State đổi email
+  const [showEmailModal, setShowEmailModal] = useState(false)
+  const [newEmail, setNewEmail] = useState('')
+  const [emailLoading, setEmailLoading] = useState(false)
+  const [emailMessage, setEmailMessage] = useState('')
 
   const isAdmin = profile?.role === 'admin'
   const isTeacher = profile?.role === 'teacher'
@@ -323,6 +331,87 @@ export function ProfileTab({
                       </p>
                     </div>
                   </div>
+                </div>
+
+                {/* EMAIL SECTION & CHANGE EMAIL FORM */}
+                <div className="mt-6 pt-6 border-t border-slate-100 space-y-3">
+                  <div className="flex items-center justify-between bg-indigo-50/60 p-4 rounded-2xl border border-indigo-100">
+                    <div>
+                      <p className="text-[10px] text-indigo-500 font-bold uppercase tracking-wider">Địa chỉ Email đăng nhập</p>
+                      <p className="font-bold text-slate-900 mt-0.5">{authUser?.email}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowEmailModal(!showEmailModal)
+                        setEmailMessage('')
+                        setNewEmail('')
+                      }}
+                      className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer"
+                    >
+                      {showEmailModal ? 'Đóng' : 'Đổi Email'}
+                    </button>
+                  </div>
+
+                  {showEmailModal && (
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault()
+                        if (!newEmail || !onChangeEmail) return
+                        setEmailLoading(true)
+                        setEmailMessage('')
+                        try {
+                          await onChangeEmail(newEmail)
+                          setEmailMessage('Đã gửi email xác nhận! Vui lòng kiểm tra hộp thư email mới để hoàn tất đổi email.')
+                          setNewEmail('')
+                        } catch (err: any) {
+                          setEmailMessage('Lỗi: ' + (err?.message || 'Không thể gửi yêu cầu đổi email.'))
+                        } finally {
+                          setEmailLoading(false)
+                        }
+                      }}
+                      className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 animate-fade-in"
+                    >
+                      <p className="text-xs text-slate-600 font-semibold">
+                        Nhập địa chỉ email mới. Hệ thống sẽ gửi một liên kết xác thực tới hòm thư mới.
+                      </p>
+
+                      {emailMessage && (
+                        <div className={`p-3 rounded-xl text-xs font-bold ${emailMessage.includes('Lỗi') ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'}`}>
+                          {emailMessage}
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Email mới</label>
+                        <input
+                          type="email"
+                          required
+                          value={newEmail}
+                          onChange={(e) => setNewEmail(e.target.value)}
+                          placeholder="email-moi@example.com"
+                          className="w-full mt-1 border border-slate-200 rounded-xl px-3.5 py-2 font-semibold text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition"
+                        />
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setShowEmailModal(false)}
+                          className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer"
+                        >
+                          Hủy
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={emailLoading}
+                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition cursor-pointer disabled:opacity-50"
+                        >
+                          {emailLoading ? 'Đang gửi...' : 'Gửi liên kết xác nhận'}
+                        </button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               </div>
             ) : (
