@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { User, Shield, Send, Bell, PackageMinus, TriangleAlert, ClipboardList, Zap, PlusCircle, CalendarDays, NotebookPen, PenTool, UserRound, Phone, MapPin, Calendar, CheckCircle2, UserPen, Clock, Download } from 'lucide-react'
 import { SeverityBadge } from '@/components/ui/badges'
 import type { Loan, DeviceReport, Tab, Device, JournalEntry, UserProfile, Schedule } from '@/lib/types'
-import { downloadCSV } from '@/lib/utils/export'
+import { downloadCSV, isDateInRange, format24hTime } from '@/lib/utils/export'
 import { generatePDF } from '@/lib/utils/pdf-export'
 import { ReportTemplate } from './report-template'
 
@@ -81,21 +81,17 @@ export function ProfileTab({
   const personalReports = reports.filter(r => r.reporter_id === authUser?.id)
   const personalJournals = journal.filter(j => j.author_id === authUser?.id)
 
-  const filteredLoansData = (isAdmin ? loans : personalLoans).filter(l => 
-    (!exportStartDate || new Date(l.created_at) >= new Date(exportStartDate)) &&
-    (!exportEndDate || new Date(l.created_at) <= new Date(exportEndDate))
+  const filteredLoansData = (isAdmin || isTeacher ? loans : personalLoans).filter(l => 
+    isDateInRange(l.created_at, exportStartDate, exportEndDate)
   )
-  const filteredReportsData = reports.filter(r => 
-    (!exportStartDate || new Date(r.created_at) >= new Date(exportStartDate)) &&
-    (!exportEndDate || new Date(r.created_at) <= new Date(exportEndDate))
+  const filteredReportsData = (isAdmin || isTeacher ? reports : personalReports).filter(r => 
+    isDateInRange(r.created_at, exportStartDate, exportEndDate)
   )
-  const filteredSchedulesData = (isAdmin ? schedules : schedules.filter(s => s.instructor === profile?.name)).filter(s => 
-    (!exportStartDate || new Date(s.date) >= new Date(exportStartDate)) &&
-    (!exportEndDate || new Date(s.date) <= new Date(exportEndDate))
+  const filteredSchedulesData = (isAdmin || isTeacher ? schedules : schedules.filter(s => s.instructor === profile?.name)).filter(s => 
+    isDateInRange(s.date, exportStartDate, exportEndDate)
   )
-  const filteredJournalsData = (isAdmin ? journal : personalJournals).filter(j => j.journal_role === 'teacher').filter(j => 
-    (!exportStartDate || new Date(j.created_at) >= new Date(exportStartDate)) &&
-    (!exportEndDate || new Date(j.created_at) <= new Date(exportEndDate))
+  const filteredJournalsData = (isAdmin || isTeacher ? journal : personalJournals).filter(j => 
+    isDateInRange(j.date || j.created_at, exportStartDate, exportEndDate)
   )
 
   const handleExportPDF = async () => {
@@ -114,25 +110,25 @@ export function ProfileTab({
       alert('Vui lòng chọn ít nhất một nội dung để xuất báo cáo.')
       return
     }
-    if (chkDevices && isAdmin) {
+    if (chkDevices && (isAdmin || isTeacher)) {
       const data = devices.map(d => [d.code, d.name, d.category, d.total, d.available, d.status])
       downloadCSV('tinh-trang-thiet-bi.csv', [['Mã', 'Tên thiết bị', 'Danh mục', 'Tổng số', 'Khả dụng', 'Trạng thái'], ...data])
     }
     if (chkLoans) {
-      const rows = filteredLoansData.map(l => [l.user_name, l.device_name, l.quantity, new Date(l.created_at).toLocaleDateString(), l.return_date, l.status])
+      const rows = filteredLoansData.map(l => [l.user_name, l.device_name, l.quantity, new Date(l.created_at).toLocaleDateString('vi-VN'), l.return_date || '', l.status])
       downloadCSV('lich-su-muon-tra.csv', [['Người mượn', 'Thiết bị', 'Số lượng', 'Ngày mượn', 'Hạn trả', 'Trạng thái'], ...rows])
     }
-    if (chkReports && isAdmin) {
-      const rows = filteredReportsData.map(r => [r.device_name, r.reporter_name, r.description, r.severity, new Date(r.created_at).toLocaleDateString(), r.status])
+    if (chkReports && (isAdmin || isTeacher)) {
+      const rows = filteredReportsData.map(r => [r.device_name, r.reporter_name, r.description, r.severity, new Date(r.created_at).toLocaleDateString('vi-VN'), r.status])
       downloadCSV('nhat-ky-bao-hong.csv', [['Thiết bị', 'Người báo', 'Mô tả', 'Mức độ', 'Ngày báo', 'Trạng thái'], ...rows])
     }
     if (chkSchedules) {
-      const rows = filteredSchedulesData.map(s => [s.title, s.date, s.time_range, s.instructor, s.target_audience])
+      const rows = filteredSchedulesData.map(s => [s.title, s.date, s.time_range || '', s.instructor, s.target_audience])
       downloadCSV('thong-ke-tiet-day.csv', [['Nội dung', 'Ngày', 'Thời gian', 'Giáo viên phụ trách', 'Đối tượng'], ...rows])
     }
     if (chkJournals) {
-      const rows = filteredJournalsData.map(j => [new Date(j.created_at).toLocaleDateString(), j.target_class, j.subject, j.rating, j.content])
-      downloadCSV('danh-gia-tiet-day.csv', [['Ngày', 'Lớp', 'Môn học', 'Đánh giá (Sao)', 'Nhận xét'], ...rows])
+      const rows = filteredJournalsData.map(j => [j.date || new Date(j.created_at).toLocaleDateString('vi-VN'), format24hTime(j.time_of_day), j.target_class || j.type, j.subject || j.title, j.rating ? `${j.rating} sao` : '', j.content])
+      downloadCSV('danh-gia-tiet-day.csv', [['Ngày', 'Giờ học', 'Lớp / Loại', 'Môn học / Tiêu đề', 'Đánh giá', 'Nhận xét'], ...rows])
     }
   }
 
@@ -797,7 +793,7 @@ export function ProfileTab({
         exporterName={profile?.name || 'Unknown'}
         exportDate={new Date().toLocaleString('vi-VN')}
         source="Hệ thống Quản lý STEM Lab"
-        devices={isAdmin ? devices : []}
+        devices={isAdmin || isTeacher ? devices : []}
         loans={filteredLoansData}
         reports={filteredReportsData}
         schedules={filteredSchedulesData}

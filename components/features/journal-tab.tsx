@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { NotebookPen, Calendar, Users2, Trash2, Search, Star, Building2, GraduationCap, UserCheck, ArrowUpDown, BookOpen, Plus } from 'lucide-react'
 import type { JournalEntry, UserProfile } from '@/lib/types'
 import type { User } from '@supabase/supabase-js'
+import { format24hTime } from '@/lib/utils/export'
 
 type JournalRole = 'hoc-sinh' | 'giao-vien' | 'quan-tri'
 
@@ -288,7 +289,7 @@ export function JournalTab({
               <div className="flex flex-wrap items-center gap-4 pt-2 text-[11px] text-slate-400 font-medium border-t border-slate-100">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5" />
-                  {entry.date} {entry.time_of_day ? `· ${entry.time_of_day}` : ''}
+                  {entry.date} {entry.time_of_day ? `· ${format24hTime(entry.time_of_day)}` : ''}
                 </span>
                 <span className="flex items-center gap-1 font-semibold text-slate-600">
                   <Users2 className="w-3.5 h-3.5 text-slate-400" />
