@@ -1,3 +1,5 @@
+import { isValidSafeUrl, sanitizeInput, sanitizeEmailSubject } from '@/lib/utils/security'
+
 export type NotificationEvent =
   | 'borrow_request'
   | 'borrow_approved'
@@ -128,7 +130,6 @@ export function saveNotificationConfig(config: NotificationConfig): void {
   if (typeof window === 'undefined') return
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
-    // Keep backwards compatibility for legacy keys
     localStorage.setItem('tg_bot_token', config.telegram.botToken)
     localStorage.setItem('tg_chat_id', config.telegram.chatId)
     localStorage.setItem('tg_enabled', String(config.telegram.enabled))
@@ -138,17 +139,18 @@ export function saveNotificationConfig(config: NotificationConfig): void {
 }
 
 /**
- * Format notification payload to HTML for Telegram
+ * Format notification payload to HTML for Telegram with safe escaping
  */
 function formatTelegramMessage(title: string, details: Record<string, string | number | undefined | null>, note?: string): string {
-  let text = `<b>${title}</b>\n\n`
+  const safeTitle = sanitizeInput(title)
+  let text = `<b>${safeTitle}</b>\n\n`
   for (const [key, val] of Object.entries(details)) {
     if (val !== undefined && val !== null && val !== '') {
-      text += `• <b>${key}:</b> ${val}\n`
+      text += `• <b>${sanitizeInput(key)}:</b> ${sanitizeInput(String(val))}\n`
     }
   }
   if (note) {
-    text += `\n<i>💬 ${note}</i>\n`
+    text += `\n<i>💬 ${sanitizeInput(note)}</i>\n`
   }
   text += `\n🏛 <i>Hệ thống Quản lý STEM Lab – THPT Bắc Đông Quan</i>`
   return text
@@ -161,8 +163,8 @@ function formatDiscordPayload(event: NotificationEvent, title: string, details: 
   const fields = Object.entries(details)
     .filter(([_, v]) => v !== undefined && v !== null && v !== '')
     .map(([name, value]) => ({
-      name,
-      value: String(value),
+      name: sanitizeInput(name),
+      value: sanitizeInput(String(value)),
       inline: true,
     }))
 
@@ -171,10 +173,10 @@ function formatDiscordPayload(event: NotificationEvent, title: string, details: 
     avatar_url: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=128&h=128&fit=crop',
     embeds: [
       {
-        title,
+        title: sanitizeInput(title),
         color: EVENT_DISCORD_COLORS[event] || 0x4f46e5,
         fields,
-        description: note ? `💬 **Ghi chú:** ${note}` : undefined,
+        description: note ? `💬 **Ghi chú:** ${sanitizeInput(note)}` : undefined,
         footer: {
           text: 'STEM Laboratory Management Website • THPT Bắc Đông Quan',
         },
@@ -188,22 +190,23 @@ function formatDiscordPayload(event: NotificationEvent, title: string, details: 
  * Format notification payload for Zalo / Generic JSON Webhook
  */
 function formatGenericPayload(title: string, details: Record<string, string | number | undefined | null>, note?: string) {
-  let plainText = `[STEM LAB BĐQ] ${title}\n`
+  const safeTitle = sanitizeInput(title)
+  let plainText = `[STEM LAB BĐQ] ${safeTitle}\n`
   for (const [key, val] of Object.entries(details)) {
     if (val !== undefined && val !== null && val !== '') {
-      plainText += `- ${key}: ${val}\n`
+      plainText += `- ${sanitizeInput(key)}: ${sanitizeInput(String(val))}\n`
     }
   }
-  if (note) plainText += `Ghi chú: ${note}\n`
+  if (note) plainText += `Ghi chú: ${sanitizeInput(note)}\n`
 
   return {
     source: 'STEM_LAB_BDQ',
-    title,
+    title: safeTitle,
     text: plainText,
     message: plainText,
     content: plainText,
     details,
-    note,
+    note: note ? sanitizeInput(note) : undefined,
     timestamp: new Date().toISOString(),
   }
 }
@@ -221,8 +224,8 @@ function triggerBrowserNotification(title: string, details: Record<string, strin
       .join(' | ')
 
     try {
-      new Notification(title, {
-        body: summary + (note ? `\n${note}` : ''),
+      new Notification(sanitizeInput(title), {
+        body: summary + (note ? `\n${sanitizeInput(note)}` : ''),
         icon: '/favicon.ico',
       })
     } catch {}
@@ -230,7 +233,7 @@ function triggerBrowserNotification(title: string, details: Record<string, strin
 }
 
 /**
- * Dispatch notification to ALL enabled channels simultaneously
+ * Dispatch notification to ALL enabled channels simultaneously (SSRF Protected)
  */
 export async function sendNotification(
   event: NotificationEvent,
@@ -258,8 +261,8 @@ export async function sendNotification(
     promises.push(tgPromise)
   }
 
-  // 2. Discord Webhook Dispatch (Rich Embeds)
-  if (config.discord.enabled && config.discord.webhookUrl) {
+  // 2. Discord Webhook Dispatch (Rich Embeds with SSRF Protection)
+  if (config.discord.enabled && config.discord.webhookUrl && isValidSafeUrl(config.discord.webhookUrl)) {
     const discordBody = formatDiscordPayload(event, payload.title, payload.details, payload.note)
     const discordPromise = fetch(config.discord.webhookUrl, {
       method: 'POST',
@@ -269,8 +272,8 @@ export async function sendNotification(
     promises.push(discordPromise)
   }
 
-  // 3. Zalo Webhook Dispatch
-  if (config.zalo.enabled && config.zalo.webhookUrl) {
+  // 3. Zalo Webhook Dispatch (SSRF Protected)
+  if (config.zalo.enabled && config.zalo.webhookUrl && isValidSafeUrl(config.zalo.webhookUrl)) {
     const zaloBody = formatGenericPayload(payload.title, payload.details, payload.note)
     const zaloPromise = fetch(config.zalo.webhookUrl, {
       method: 'POST',
@@ -280,8 +283,8 @@ export async function sendNotification(
     promises.push(zaloPromise)
   }
 
-  // 4. Custom Webhook Dispatch (Slack / Lark / etc.)
-  if (config.customWebhook.enabled && config.customWebhook.webhookUrl) {
+  // 4. Custom Webhook Dispatch (SSRF Protected)
+  if (config.customWebhook.enabled && config.customWebhook.webhookUrl && isValidSafeUrl(config.customWebhook.webhookUrl)) {
     const webhookBody = formatGenericPayload(payload.title, payload.details, payload.note)
     const webhookPromise = fetch(config.customWebhook.webhookUrl, {
       method: 'POST',
@@ -330,10 +333,13 @@ export async function testNotificationChannel(
       }
     }
 
-    // 2. Discord Test (Rich Embed)
+    // 2. Discord Test (Rich Embed & SSRF check)
     if (channel === 'discord') {
       if (!config.discord.webhookUrl) {
         return { success: false, message: 'Vui lòng nhập Discord Webhook URL.' }
+      }
+      if (!isValidSafeUrl(config.discord.webhookUrl)) {
+        return { success: false, message: 'URL Discord Webhook không an toàn hoặc không hợp lệ (phải bắt đầu bằng https://).' }
       }
       const payload = {
         username: 'STEM Lab THPT Bắc Đông Quan',
@@ -341,11 +347,11 @@ export async function testNotificationChannel(
         embeds: [
           {
             title: '🎮 Kết nối Discord Webhook thành công!',
-            color: 0x5865f2, // Discord Blurple
+            color: 0x5865f2,
             description: 'Kênh Discord này đã được cấu hình nhận thông báo tự động từ **Hệ thống Quản lý STEM Lab – THPT Bắc Đông Quan**.',
             fields: [
-              { name: 'Trạng thái', value: '🟢 Hoạt động tốt', inline: true },
-              { name: 'Kênh tích hợp', value: 'Discord Webhook (Free)', inline: true },
+              { name: 'Trạng thái', value: '🟢 Hoạt động an toàn', inline: true },
+              { name: 'Kênh tích hợp', value: 'Discord Webhook (SSL/TLS)', inline: true },
             ],
             footer: {
               text: 'STEM Laboratory • THPT Bắc Đông Quan',
@@ -370,6 +376,9 @@ export async function testNotificationChannel(
     if (channel === 'zalo') {
       if (!config.zalo.webhookUrl) {
         return { success: false, message: 'Vui lòng nhập Webhook URL của Zalo.' }
+      }
+      if (!isValidSafeUrl(config.zalo.webhookUrl)) {
+        return { success: false, message: 'URL Zalo Webhook không an toàn hoặc không hợp lệ (phải bắt đầu bằng https://).' }
       }
       const payload = {
         title: '🔔 Kiểm tra kết nối Zalo thành công',
@@ -411,6 +420,9 @@ export async function testNotificationChannel(
       if (!config.customWebhook.webhookUrl) {
         return { success: false, message: 'Vui lòng nhập Webhook URL tùy chỉnh.' }
       }
+      if (!isValidSafeUrl(config.customWebhook.webhookUrl)) {
+        return { success: false, message: 'URL Webhook không an toàn hoặc trỏ tới địa chỉ IP bị cấm (phải bắt đầu bằng https://).' }
+      }
       const payload = formatGenericPayload('🔔 Kiểm tra Custom Webhook thành công', {
         'Hệ thống': 'STEM Lab THPT Bắc Đông Quan',
         'Thời gian': new Date().toLocaleString('vi-VN'),
@@ -433,7 +445,7 @@ export async function testNotificationChannel(
 }
 
 /**
- * Gửi thông báo trực tiếp cho từng học sinh qua Email và Zalo (tự động bỏ qua nếu không có Email/SĐT)
+ * Gửi thông báo an toàn trực tiếp cho học sinh qua Email và Zalo
  */
 export async function notifyStudent(
   studentProfile: { email?: string; phone?: string | null; name: string | null },
@@ -443,14 +455,18 @@ export async function notifyStudent(
 ): Promise<void> {
   const promises: Promise<any>[] = []
 
-  // 1. Gửi qua Email (nếu học sinh có đăng ký Email)
+  const safeTitle = sanitizeEmailSubject(title)
+  const safeMessage = sanitizeInput(messageText)
+  const studentName = sanitizeInput(studentProfile.name || 'Thành viên')
+
+  // 1. Gửi qua Email với HTML an toàn
   if (studentProfile.email && studentProfile.email.includes('@')) {
     const emailPromise = fetch('/api/send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         to: studentProfile.email,
-        subject: `[STEM LAB BDQ] ${title}`,
+        subject: `[STEM LAB BDQ] ${safeTitle}`,
         html: `
           <div style="font-family: sans-serif; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; max-width: 600px; color: #1e293b; line-height: 1.6; background-color: #ffffff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
             <div style="display: flex; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 20px;">
@@ -458,9 +474,9 @@ export async function notifyStudent(
               <h2 style="color: #0284c7; margin: 0; font-size: 20px; font-weight: 800;">STEM Lab THPT Bắc Đông Quan</h2>
             </div>
             
-            <h3 style="color: #0f172a; margin-top: 0; font-size: 16px; font-weight: 700;">${title}</h3>
-            <p style="font-size: 14px; color: #334155;">Chào bạn <strong>${studentProfile.name || 'Thành viên'}</strong>,</p>
-            <p style="font-size: 14px; color: #334155;">${messageText}</p>
+            <h3 style="color: #0f172a; margin-top: 0; font-size: 16px; font-weight: 700;">${safeTitle}</h3>
+            <p style="font-size: 14px; color: #334155;">Chào bạn <strong>${studentName}</strong>,</p>
+            <p style="font-size: 14px; color: #334155;">${safeMessage}</p>
             
             <div style="background-color: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px; padding: 16px; margin: 20px 0;">
               <h4 style="margin: 0 0 10px 0; font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Chi tiết thông tin:</h4>
@@ -470,8 +486,8 @@ export async function notifyStudent(
                     .filter(([_, v]) => v !== undefined && v !== null && v !== '')
                     .map(([k, v]) => `
                       <tr>
-                        <td style="padding: 6px 0; color: #64748b; font-weight: 600; width: 140px;">${k}:</td>
-                        <td style="padding: 6px 0; color: #1e293b; font-weight: 700;">${v}</td>
+                        <td style="padding: 6px 0; color: #64748b; font-weight: 600; width: 140px;">${sanitizeInput(k)}:</td>
+                        <td style="padding: 6px 0; color: #1e293b; font-weight: 700;">${sanitizeInput(String(v))}</td>
                       </tr>
                     `).join('')}
                 </tbody>
@@ -490,13 +506,13 @@ export async function notifyStudent(
     promises.push(emailPromise)
   }
 
-  // 2. Gửi qua Zalo Webhook (nếu có cấu hình Zalo và học sinh có số điện thoại)
+  // 2. Gửi qua Zalo Webhook an toàn
   const config = getNotificationConfig()
-  if (config.zalo.enabled && config.zalo.webhookUrl && studentProfile.phone && studentProfile.phone.trim() !== '') {
-    let plainText = `[STEM LAB BĐQ] ${title}\n${messageText}\n`
+  if (config.zalo.enabled && config.zalo.webhookUrl && isValidSafeUrl(config.zalo.webhookUrl) && studentProfile.phone && studentProfile.phone.trim() !== '') {
+    let plainText = `[STEM LAB BĐQ] ${safeTitle}\n${safeMessage}\n`
     for (const [key, val] of Object.entries(details)) {
       if (val !== undefined && val !== null && val !== '') {
-        plainText += `- ${key}: ${val}\n`
+        plainText += `- ${sanitizeInput(key)}: ${sanitizeInput(String(val))}\n`
       }
     }
     const zaloPromise = fetch(config.zalo.webhookUrl, {
@@ -505,7 +521,7 @@ export async function notifyStudent(
       body: JSON.stringify({
         source: 'STEM_LAB_BDQ',
         phone: studentProfile.phone,
-        title,
+        title: safeTitle,
         text: plainText,
         details,
       }),

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
-import { X, Lock, Mail, User, Phone, GraduationCap, Calendar, Loader2 } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { X, Lock, Mail, User, Phone, GraduationCap, Calendar, Loader2, ShieldCheck, AlertCircle } from 'lucide-react'
+import { validatePassword } from '@/lib/utils/security'
 
 type OAuthProvider = 'google' | 'facebook' | 'github'
 
@@ -73,6 +74,11 @@ export function AuthModal({
   onOAuthLogin,
 }: AuthModalProps) {
   const [oauthLoading, setOauthLoading] = useState<OAuthProvider | null>(null)
+  const [regPassword, setRegPassword] = useState('')
+
+  const passwordStrength = useMemo(() => {
+    return validatePassword(regPassword)
+  }, [regPassword])
 
   if (!isOpen) return null
 
@@ -88,7 +94,8 @@ export function AuthModal({
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-200/60 bg-slate-50/70 px-6 py-4">
           <div>
-            <h3 className="text-base sm:text-lg font-black text-slate-900">
+            <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-sky-600" />
               {mode === 'login'
                 ? 'Đăng Nhập Hệ Thống'
                 : mode === 'register'
@@ -388,7 +395,7 @@ export function AuthModal({
 
               <div>
                 <label className="mb-1 block text-[11px] font-bold uppercase text-slate-500">
-                  Mật khẩu (tối thiểu 8 ký tự)
+                  Mật khẩu
                 </label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -396,11 +403,39 @@ export function AuthModal({
                     name="password"
                     type="password"
                     required
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
                     placeholder="••••••••"
-                    minLength={8}
+                    minLength={6}
                     className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
                   />
                 </div>
+
+                {/* ── PASSWORD STRENGTH METER ── */}
+                {regPassword && (
+                  <div className="mt-1.5 space-y-1">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-slate-400 font-medium">Độ an toàn:</span>
+                      <span className="font-bold text-slate-700">{passwordStrength.label}</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex gap-1">
+                      {[0, 1, 2, 3].map((step) => (
+                        <div
+                          key={step}
+                          className={`h-full flex-1 rounded-full transition-all ${
+                            step <= passwordStrength.score ? passwordStrength.color : 'bg-slate-200'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    {passwordStrength.feedback.length > 0 && (
+                      <p className="text-[10px] text-amber-600 flex items-center gap-1 font-medium">
+                        <AlertCircle className="w-3 h-3 shrink-0" />
+                        {passwordStrength.feedback[0]}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>

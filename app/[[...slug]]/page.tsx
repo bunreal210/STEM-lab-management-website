@@ -34,6 +34,7 @@ import { ReportModal } from '@/components/modals/report-modal'
 import { NotificationModal } from '@/components/modals/notification-modal'
 import { CompleteProfileModal } from '@/components/modals/complete-profile-modal'
 import { sendNotification, notifyStudent } from '@/lib/services/notifications'
+import { sanitizeInput } from '@/lib/utils/security'
 
 const PATH_TO_TAB: Record<string, Tab> = {
   '/': 'trang-chu',
@@ -180,9 +181,13 @@ export default function App() {
 
   const updateProfile = async (name: string, class_name: string, phone: string, dob: string) => {
     if (!authUser) return
+    const cleanName = sanitizeInput(name)
+    const cleanClass = sanitizeInput(class_name).toUpperCase()
+    const cleanPhone = sanitizeInput(phone)
+    const cleanDob = sanitizeInput(dob)
     const { error } = await supabase
       .from('user_profiles')
-      .update({ name, class_name, phone, dob: dob || null })
+      .update({ name: cleanName, class_name: cleanClass, phone: cleanPhone, dob: cleanDob || null })
       .eq('id', authUser.id)
     if (error) throw error
     await loadUserData(authUser.id)
@@ -361,13 +366,13 @@ export default function App() {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
     const data = {
-      name: fd.get('name') as string,
-      category: fd.get('category') as string,
-      code: fd.get('code') as string,
-      total: parseInt(fd.get('total') as string),
-      available: parseInt(fd.get('available') as string),
-      status: fd.get('status') as string,
-      description: fd.get('description') as string,
+      name: sanitizeInput(fd.get('name') as string),
+      category: sanitizeInput(fd.get('category') as string),
+      code: sanitizeInput(fd.get('code') as string).toUpperCase(),
+      total: Math.max(0, parseInt(fd.get('total') as string) || 0),
+      available: Math.max(0, parseInt(fd.get('available') as string) || 0),
+      status: sanitizeInput(fd.get('status') as string),
+      description: sanitizeInput(fd.get('description') as string),
       image_url: (fd.get('image_url') as string) || null,
     }
 
@@ -395,12 +400,12 @@ export default function App() {
   async function handleScheduleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
-    const title = fd.get('title') as string
-    const date = fd.get('date') as string
-    const timeRange = fd.get('time_range') as string
-    const instructor = (fd.get('instructor') as string) || profile?.name || 'Chưa phân công'
-    const target = fd.get('target') as string
-    const description = fd.get('description') as string
+    const title = sanitizeInput(fd.get('title') as string)
+    const date = sanitizeInput(fd.get('date') as string)
+    const timeRange = sanitizeInput(fd.get('time_range') as string)
+    const instructor = sanitizeInput((fd.get('instructor') as string) || profile?.name || 'Chưa phân công')
+    const target = sanitizeInput(fd.get('target') as string)
+    const description = sanitizeInput(fd.get('description') as string)
 
     const { error } = await supabase.from('schedules').insert({
       title, date, time_range: timeRange, instructor,
@@ -436,8 +441,11 @@ export default function App() {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
     const { error } = await supabase.from('materials').insert({
-      title: fd.get('title'), type: fd.get('type'),
-      author: fd.get('author'), description: fd.get('description'), url: fd.get('url') || '#',
+      title: sanitizeInput(fd.get('title') as string),
+      type: sanitizeInput(fd.get('type') as string),
+      author: sanitizeInput(fd.get('author') as string),
+      description: sanitizeInput(fd.get('description') as string),
+      url: fd.get('url') ? String(fd.get('url')).trim() : '#',
     })
     if (error) { showDialog('Lỗi', error.message, false); return }
     setMaterialModalOpen(false)
@@ -456,11 +464,11 @@ export default function App() {
     e.preventDefault()
     if (!authUser || !profile) { showDialog('Chưa đăng nhập', 'Vui lòng đăng nhập để mượn thiết bị.', false); return }
     const fd = new FormData(e.currentTarget)
-    const devId = fd.get('device_id') as string
-    const qty   = parseInt(fd.get('quantity') as string)
+    const devId = sanitizeInput(fd.get('device_id') as string)
+    const qty   = Math.max(1, parseInt(fd.get('quantity') as string) || 1)
     const dev   = devices.find(d => d.id === devId)
     if (!dev) { showDialog('Lỗi', 'Không tìm thấy thiết bị.', false); return }
-    const returnDateStr = fd.get('return_date') as string
+    const returnDateStr = sanitizeInput(fd.get('return_date') as string)
     if (returnDateStr) {
       const [rYear, rMonth, rDay] = returnDateStr.split('-').map(Number)
       const returnDate = new Date(rYear, rMonth - 1, rDay)
@@ -473,10 +481,16 @@ export default function App() {
     }
 
     const loan = {
-      user_id: authUser.id, user_name: profile.name || '', class_name: profile.class_name,
-      phone: profile.phone, device_id: devId, device_name: dev.name,
-      quantity: qty, return_date: fd.get('return_date') as string,
-      purpose: fd.get('purpose') as string, status: 'Chờ duyệt' as const,
+      user_id: authUser.id,
+      user_name: sanitizeInput(profile.name || ''),
+      class_name: sanitizeInput(profile.class_name || ''),
+      phone: sanitizeInput(profile.phone || ''),
+      device_id: devId,
+      device_name: dev.name,
+      quantity: qty,
+      return_date: returnDateStr,
+      purpose: sanitizeInput(fd.get('purpose') as string),
+      status: 'Chờ duyệt' as const,
     }
     const { error } = await supabase.from('loans').insert(loan)
     if (error) { showDialog('Lỗi', error.message, false); return }
@@ -589,23 +603,23 @@ export default function App() {
   async function handleJournalSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
-    const journalRole = fd.get('journal_role') as string || journalTab
+    const journalRole = sanitizeInput((fd.get('journal_role') as string) || journalTab)
     const entry: Record<string, unknown> = {
-      date: fd.get('date') as string,
-      time_of_day: fd.get('time') as string,
+      date: sanitizeInput(fd.get('date') as string),
+      time_of_day: sanitizeInput(fd.get('time') as string),
       type: journalRole === 'hoc-sinh' ? 'Buổi học' : journalRole === 'giao-vien' ? 'Đánh giá' : 'Kiểm kê',
-      title: fd.get('title') as string,
-      content: fd.get('content') as string,
-      author: profile?.name || 'Unknown',
+      title: sanitizeInput(fd.get('title') as string),
+      content: sanitizeInput(fd.get('content') as string),
+      author: sanitizeInput(profile?.name || 'Unknown'),
       author_id: authUser?.id || null,
-      participants: parseInt(fd.get('participants') as string) || 0,
+      participants: Math.max(0, parseInt(fd.get('participants') as string) || 0),
       status: 'Hoàn thành',
       journal_role: journalRole,
-      subject: (fd.get('subject') as string) || null,
-      room_condition: (fd.get('room_condition') as string) || null,
-      equipment_notes: (fd.get('equipment_notes') as string) || null,
+      subject: sanitizeInput((fd.get('subject') as string) || '') || null,
+      room_condition: sanitizeInput((fd.get('room_condition') as string) || '') || null,
+      equipment_notes: sanitizeInput((fd.get('equipment_notes') as string) || '') || null,
       rating: fd.get('rating') ? parseInt(fd.get('rating') as string) : null,
-      target_class: (fd.get('target_class') as string) || null,
+      target_class: sanitizeInput((fd.get('target_class') as string) || '') || null,
     }
     const { error } = await supabase.from('journal_entries').insert(entry)
     if (error) { showDialog('Lỗi', error.message, false); return }
@@ -641,13 +655,18 @@ export default function App() {
     e.preventDefault()
     if (!authUser || !profile) return
     const fd = new FormData(e.currentTarget)
-    const devId = fd.get('device_id') as string
+    const devId = sanitizeInput(fd.get('device_id') as string)
     const dev = devices.find(d => d.id === devId)
     const rpt = {
-      device_id: devId, device_name: dev?.name || '',
-      reporter_id: authUser.id, reporter_name: profile.name, class_name: profile.class_name,
-      severity: fd.get('severity') as string, description: fd.get('description') as string,
-      status: 'Chờ xử lý', admin_note: '',
+      device_id: devId,
+      device_name: dev?.name || '',
+      reporter_id: authUser.id,
+      reporter_name: sanitizeInput(profile.name || ''),
+      class_name: sanitizeInput(profile.class_name || ''),
+      severity: sanitizeInput(fd.get('severity') as string),
+      description: sanitizeInput(fd.get('description') as string),
+      status: 'Chờ xử lý',
+      admin_note: '',
     }
     const { error } = await supabase.from('device_reports').insert(rpt)
     if (error) { showDialog('Lỗi', error.message, false); return }
