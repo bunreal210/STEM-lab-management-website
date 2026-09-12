@@ -44,6 +44,24 @@ export type TimeFilter = 'all' | 'today' | 'this_week' | 'this_month' | 'upcomin
 export type TopicCategory = 'all' | 'robotics' | 'ai_code' | 'science_khkt' | 'lab_experiment' | 'design_3d' | 'general'
 export type ShiftCategory = 'all' | 'morning' | 'afternoon' | 'evening'
 
+export interface TopicInfo {
+  key: TopicCategory
+  label: string
+  icon: typeof Cpu
+  badgeClass: string
+  cardBorder: string
+  gradientHeader: string
+  bgSoft: string
+  dotColor: string
+}
+
+export type EnrichedSchedule = Schedule & {
+  topic: TopicInfo
+  shift: 'morning' | 'afternoon' | 'evening' | 'other'
+  status: 'ongoing' | 'today' | 'upcoming' | 'past'
+  isBookmarked: boolean
+}
+
 // ── SAFE LOCAL DATE FORMATTING ──
 function formatYMD(year: number, monthZeroIndexed: number, day: number): string {
   const m = String(monthZeroIndexed + 1).padStart(2, '0')
@@ -102,17 +120,6 @@ function formatVietnameseDate(ymd: string): string {
 }
 
 // ── TOPIC RECOGNITION & COLOR STYLES ──
-interface TopicInfo {
-  key: TopicCategory
-  label: string
-  icon: typeof Cpu
-  badgeClass: string
-  cardBorder: string
-  gradientHeader: string
-  bgSoft: string
-  dotColor: string
-}
-
 function detectTopic(title: string = '', desc: string = ''): TopicInfo {
   const text = (title + ' ' + desc).toLowerCase()
   if (text.includes('robot') || text.includes('vẽ mạch') || text.includes('arduino') || text.includes('iot') || text.includes('cảm biến') || text.includes('tự động')) {
@@ -348,7 +355,7 @@ export function SchedulesTab({
 
   // Selected date for day view and detail popup
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date())
-  const [selectedEventModal, setSelectedEventModal] = useState<Schedule | null>(null)
+  const [selectedEventModal, setSelectedEventModal] = useState<EnrichedSchedule | null>(null)
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([])
   const [copyFeedbackId, setCopyFeedbackId] = useState<string | null>(null)
   const [, setCurrentTime] = useState<Date>(() => new Date())
@@ -395,7 +402,7 @@ export function SchedulesTab({
   const currentSelectedYMD = formatYMD(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate())
 
   // Enrich schedules with topic, shift & live status
-  const enrichedSchedules = useMemo(() => {
+  const enrichedSchedules = useMemo<EnrichedSchedule[]>(() => {
     return schedules.map((sc) => {
       const topic = detectTopic(sc.title, sc.description || '')
       const shift = detectShift(sc.time_range)
@@ -413,7 +420,7 @@ export function SchedulesTab({
 
   // Map schedules by exact date YYYY-MM-DD
   const schedulesByDate = useMemo(() => {
-    const map: Record<string, typeof enrichedSchedules> = {}
+    const map: Record<string, EnrichedSchedule[]> = {}
     enrichedSchedules.forEach((sc) => {
       if (!map[sc.date]) map[sc.date] = []
       map[sc.date].push(sc)
@@ -554,7 +561,7 @@ export function SchedulesTab({
       isCurrentMonth: boolean
       isToday: boolean
       hasSchedule: boolean
-      events: typeof enrichedSchedules
+      events: EnrichedSchedule[]
     }> = []
 
     // Previous month padding
@@ -1667,12 +1674,7 @@ export function SchedulesTab({
 
 // ── REUSABLE SCHEDULE CARD COMPONENT ──
 interface ScheduleCardProps {
-  event: Schedule & {
-    topic: TopicInfo
-    shift: string
-    status: 'ongoing' | 'today' | 'upcoming' | 'past'
-    isBookmarked: boolean
-  }
+  event: EnrichedSchedule
   isAdmin: boolean
   onDelete: () => void
   onSelect: () => void
