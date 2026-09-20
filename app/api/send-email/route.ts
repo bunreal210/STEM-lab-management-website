@@ -6,14 +6,13 @@ export const runtime = 'edge'
 
 export async function POST(request: Request) {
   try {
-    // ── 1. RATE LIMITING (Chống spam DoS & cạn kiệt quota API) ──
     const clientIp =
       request.headers.get('cf-connecting-ip') ||
       request.headers.get('x-real-ip') ||
       request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
       'anonymous-client'
 
-    const rateLimit = checkRateLimit(`send-email:${clientIp}`, 10, 60000) // Tối đa 10 email / phút / IP
+    const rateLimit = checkRateLimit(`send-email:${clientIp}`, 10, 60000)
     if (!rateLimit.allowed) {
       return NextResponse.json(
         {
@@ -29,11 +28,9 @@ export async function POST(request: Request) {
       )
     }
 
-    // ── 2. AUTHENTICATION TOKEN CHECK (Tùy chọn xác thực người dùng) ──
     const authHeader = request.headers.get('authorization')
     const token = authHeader?.replace(/^Bearer\s+/i, '')
 
-    // Nếu có token gửi kèm, có thể xác thực tính hợp lệ của session qua Supabase
     if (token) {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
       const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -46,8 +43,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── 3. INPUT VALIDATION & SANITIZATION ──
-    let body: any
+    let body: Record<string, unknown>
     try {
       body = await request.json()
     } catch {
@@ -63,7 +59,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Kiểm tra định dạng Email người nhận
     const recipient = String(to).trim()
     if (!isValidEmail(recipient)) {
       return NextResponse.json(
@@ -72,22 +67,18 @@ export async function POST(request: Request) {
       )
     }
 
-    // Làm sạch tiêu đề chống Email Header Injection
     const cleanSubject = sanitizeEmailSubject(String(subject))
     if (!cleanSubject) {
       return NextResponse.json({ error: 'Tiêu đề email không được để trống.' }, { status: 400 })
     }
 
-    // Giới hạn kích thước nội dung HTML (tối đa 60KB để tránh payload lớn)
     const cleanHtml = String(html)
     if (cleanHtml.length > 60000) {
       return NextResponse.json({ error: 'Nội dung email vượt quá giới hạn dung lượng cho phép.' }, { status: 413 })
     }
 
-    // ── 4. RESEND API CONFIGURATION ──
     const apiKey = process.env.RESEND_API_KEY
     if (!apiKey) {
-      console.warn('CẢNH BÁO: Chưa cấu hình biến môi trường RESEND_API_KEY')
       return NextResponse.json(
         { error: 'Chưa cấu hình dịch vụ gửi email (RESEND_API_KEY).' },
         { status: 500 }
@@ -111,7 +102,6 @@ export async function POST(request: Request) {
     const resData = await res.json()
 
     if (!res.ok) {
-      console.error('Lỗi Resend API:', resData)
       return NextResponse.json(
         { error: resData.message || 'Không thể gửi email qua dịch vụ Resend.' },
         { status: res.status }
@@ -123,8 +113,8 @@ export async function POST(request: Request) {
       message: 'Đã gửi email thông báo an toàn thành công.',
       data: { id: resData.id },
     })
-  } catch (error: any) {
-    console.error('Lỗi API Route /api/send-email:', error)
-    return NextResponse.json({ error: 'Đã xảy ra lỗi trong quá trình xử lý yêu cầu gửi email.' }, { status: 500 })
+  } catch (error: unknown) {
+    const errorMsg = error instanceof Error ? error.message : 'Đã xảy ra lỗi trong quá trình xử lý yêu cầu gửi email.'
+    return NextResponse.json({ error: errorMsg }, { status: 500 })
   }
 }

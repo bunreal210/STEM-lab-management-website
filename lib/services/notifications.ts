@@ -82,13 +82,13 @@ export const DEFAULT_NOTIFICATION_CONFIG: NotificationConfig = {
 }
 
 const EVENT_DISCORD_COLORS: Record<NotificationEvent, number> = {
-  borrow_request: 0x3b82f6, // Blue
-  borrow_approved: 0x10b981, // Emerald green
-  borrow_returned: 0x06b6d4, // Cyan
-  post_created: 0x8b5cf6, // Violet
-  report_created: 0xef4444, // Red
-  schedule_created: 0xf59e0b, // Amber
-  journal_created: 0x6366f1, // Indigo
+  borrow_request: 0x3b82f6,
+  borrow_approved: 0x10b981,
+  borrow_returned: 0x06b6d4,
+  post_created: 0x8b5cf6,
+  report_created: 0xef4444,
+  schedule_created: 0xf59e0b,
+  journal_created: 0x6366f1,
 }
 
 export function getNotificationConfig(): NotificationConfig {
@@ -107,7 +107,6 @@ export function getNotificationConfig(): NotificationConfig {
       }
     }
 
-    // Migration from legacy keys if available
     const oldTgToken = localStorage.getItem('tg_bot_token')
     const oldTgChatId = localStorage.getItem('tg_chat_id')
     const oldTgEnabled = localStorage.getItem('tg_enabled') === 'true'
@@ -138,9 +137,6 @@ export function saveNotificationConfig(config: NotificationConfig): void {
   }
 }
 
-/**
- * Format notification payload to HTML for Telegram with safe escaping
- */
 function formatTelegramMessage(title: string, details: Record<string, string | number | undefined | null>, note?: string): string {
   const safeTitle = sanitizeInput(title)
   let text = `<b>${safeTitle}</b>\n\n`
@@ -156,9 +152,6 @@ function formatTelegramMessage(title: string, details: Record<string, string | n
   return text
 }
 
-/**
- * Format notification payload for Discord Rich Embed
- */
 function formatDiscordPayload(event: NotificationEvent, title: string, details: Record<string, string | number | undefined | null>, note?: string) {
   const fields = Object.entries(details)
     .filter(([_, v]) => v !== undefined && v !== null && v !== '')
@@ -186,9 +179,6 @@ function formatDiscordPayload(event: NotificationEvent, title: string, details: 
   }
 }
 
-/**
- * Format notification payload for Zalo / Generic JSON Webhook
- */
 function formatGenericPayload(title: string, details: Record<string, string | number | undefined | null>, note?: string) {
   const safeTitle = sanitizeInput(title)
   let plainText = `[STEM LAB BĐQ] ${safeTitle}\n`
@@ -211,9 +201,6 @@ function formatGenericPayload(title: string, details: Record<string, string | nu
   }
 }
 
-/**
- * Trigger HTML5 Browser Web Notification popup
- */
 function triggerBrowserNotification(title: string, details: Record<string, string | number | undefined | null>, note?: string) {
   if (typeof window === 'undefined' || !('Notification' in window)) return
   if (Notification.permission === 'granted') {
@@ -232,21 +219,16 @@ function triggerBrowserNotification(title: string, details: Record<string, strin
   }
 }
 
-/**
- * Dispatch notification to ALL enabled channels simultaneously (SSRF Protected)
- */
 export async function sendNotification(
   event: NotificationEvent,
   payload: NotificationPayload
 ): Promise<void> {
   const config = getNotificationConfig()
 
-  // Check if event is enabled
   if (!config.events[event]) return
 
   const promises: Promise<any>[] = []
 
-  // 1. Telegram Dispatch
   if (config.telegram.enabled && config.telegram.botToken && config.telegram.chatId) {
     const tgHtml = formatTelegramMessage(payload.title, payload.details, payload.note)
     const tgPromise = fetch(`https://api.telegram.org/bot${config.telegram.botToken}/sendMessage`, {
@@ -261,7 +243,6 @@ export async function sendNotification(
     promises.push(tgPromise)
   }
 
-  // 2. Discord Webhook Dispatch (Rich Embeds with SSRF Protection)
   if (config.discord.enabled && config.discord.webhookUrl && isValidSafeUrl(config.discord.webhookUrl)) {
     const discordBody = formatDiscordPayload(event, payload.title, payload.details, payload.note)
     const discordPromise = fetch(config.discord.webhookUrl, {
@@ -272,7 +253,6 @@ export async function sendNotification(
     promises.push(discordPromise)
   }
 
-  // 3. Zalo Webhook Dispatch (SSRF Protected)
   if (config.zalo.enabled && config.zalo.webhookUrl && isValidSafeUrl(config.zalo.webhookUrl)) {
     const zaloBody = formatGenericPayload(payload.title, payload.details, payload.note)
     const zaloPromise = fetch(config.zalo.webhookUrl, {
@@ -283,7 +263,6 @@ export async function sendNotification(
     promises.push(zaloPromise)
   }
 
-  // 4. Custom Webhook Dispatch (SSRF Protected)
   if (config.customWebhook.enabled && config.customWebhook.webhookUrl && isValidSafeUrl(config.customWebhook.webhookUrl)) {
     const webhookBody = formatGenericPayload(payload.title, payload.details, payload.note)
     const webhookPromise = fetch(config.customWebhook.webhookUrl, {
@@ -294,7 +273,6 @@ export async function sendNotification(
     promises.push(webhookPromise)
   }
 
-  // 5. Browser Notification Dispatch
   if (config.browser.enabled) {
     triggerBrowserNotification(payload.title, payload.details, payload.note)
   }
@@ -302,15 +280,11 @@ export async function sendNotification(
   await Promise.allSettled(promises)
 }
 
-/**
- * Test a specific channel with a sample message
- */
 export async function testNotificationChannel(
   channel: 'telegram' | 'discord' | 'zalo' | 'browser' | 'customWebhook',
   config: NotificationConfig
 ): Promise<{ success: boolean; message: string }> {
   try {
-    // 1. Telegram Test
     if (channel === 'telegram') {
       if (!config.telegram.botToken || !config.telegram.chatId) {
         return { success: false, message: 'Vui lòng nhập đầy đủ Bot Token và Chat ID của Telegram.' }
@@ -333,7 +307,6 @@ export async function testNotificationChannel(
       }
     }
 
-    // 2. Discord Test (Rich Embed & SSRF check)
     if (channel === 'discord') {
       if (!config.discord.webhookUrl) {
         return { success: false, message: 'Vui lòng nhập Discord Webhook URL.' }
@@ -372,7 +345,6 @@ export async function testNotificationChannel(
       }
     }
 
-    // 3. Zalo Test
     if (channel === 'zalo') {
       if (!config.zalo.webhookUrl) {
         return { success: false, message: 'Vui lòng nhập Webhook URL của Zalo.' }
@@ -397,7 +369,6 @@ export async function testNotificationChannel(
       }
     }
 
-    // 4. Browser Notification Test
     if (channel === 'browser') {
       if (typeof window === 'undefined' || !('Notification' in window)) {
         return { success: false, message: 'Trình duyệt của bạn không hỗ trợ Web Notification API.' }
@@ -415,7 +386,6 @@ export async function testNotificationChannel(
       return { success: true, message: 'Đã hiển thị thông báo popup trên trình duyệt thành công!' }
     }
 
-    // 5. Custom Webhook Test
     if (channel === 'customWebhook') {
       if (!config.customWebhook.webhookUrl) {
         return { success: false, message: 'Vui lòng nhập Webhook URL tùy chỉnh.' }
@@ -444,9 +414,6 @@ export async function testNotificationChannel(
   return { success: false, message: 'Kênh không hợp lệ.' }
 }
 
-/**
- * Gửi thông báo an toàn trực tiếp cho học sinh qua Email và Zalo
- */
 export async function notifyStudent(
   studentProfile: { email?: string; phone?: string | null; name: string | null },
   title: string,
@@ -459,7 +426,6 @@ export async function notifyStudent(
   const safeMessage = sanitizeInput(messageText)
   const studentName = sanitizeInput(studentProfile.name || 'Thành viên')
 
-  // 1. Gửi qua Email với HTML an toàn
   if (studentProfile.email && studentProfile.email.includes('@')) {
     const emailPromise = fetch('/api/send-email', {
       method: 'POST',
@@ -506,7 +472,6 @@ export async function notifyStudent(
     promises.push(emailPromise)
   }
 
-  // 2. Gửi qua Zalo Webhook an toàn
   const config = getNotificationConfig()
   if (config.zalo.enabled && config.zalo.webhookUrl && isValidSafeUrl(config.zalo.webhookUrl) && studentProfile.phone && studentProfile.phone.trim() !== '') {
     let plainText = `[STEM LAB BĐQ] ${safeTitle}\n${safeMessage}\n`

@@ -1,9 +1,3 @@
-/**
- * STEM Lab Security & Data Sanitization Utility
- * Cung cấp các hàm làm sạch dữ liệu, chống tấn công XSS, SSRF, Email Header Injection & Rate Limiting.
- */
-
-// ── 1. INPUT SANITIZATION (Chống XSS & Script Injection) ──
 export function sanitizeInput(input: unknown): string {
   if (typeof input !== 'string') {
     if (input === null || input === undefined) return ''
@@ -11,20 +5,16 @@ export function sanitizeInput(input: unknown): string {
   }
 
   return input
-    // Loại bỏ các thẻ HTML script, iframe, object, embed
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
     .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
     .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
     .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '')
-    // Loại bỏ các thuộc tính event handler nguy hiểm: onload, onerror, onclick, onmouseover...
     .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
     .replace(/on\w+\s*=\s*[^\s>]+/gi, '')
-    // Loại bỏ javascript: pseudo-protocol
     .replace(/javascript:/gi, '')
     .trim()
 }
 
-// ── 2. EMAIL VALIDATION & HEADER INJECTION DEFENSE ──
 const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/
 
 export function isValidEmail(email: string): boolean {
@@ -33,18 +23,14 @@ export function isValidEmail(email: string): boolean {
   return EMAIL_REGEX.test(email.trim())
 }
 
-/**
- * Làm sạch tiêu đề Email chống Email Header Injection / SMTP Splitting
- */
 export function sanitizeEmailSubject(subject: string): string {
   if (!subject || typeof subject !== 'string') return ''
   return subject
-    .replace(/[\r\n\t]/g, ' ') // Xóa ký tự xuống dòng ngăn chặn Header Injection
-    .slice(0, 200) // Giới hạn độ dài tối đa 200 ký tự
+    .replace(/[\r\n\t]/g, ' ')
+    .slice(0, 200)
     .trim()
 }
 
-// ── 3. URL VALIDATION & SSRF DEFENSE (Bảo vệ Webhook & External Links) ──
 const PRIVATE_IP_PATTERNS = [
   /^localhost$/i,
   /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/,
@@ -52,7 +38,7 @@ const PRIVATE_IP_PATTERNS = [
   /^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$/,
   /^172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}$/,
   /^192\.168\.\d{1,3}\.\d{1,3}$/,
-  /^169\.254\.\d{1,3}\.\d{1,3}$/, // Link-local / Cloud metadata (AWS/GCP/Azure)
+  /^169\.254\.\d{1,3}\.\d{1,3}$/,
   /^::1$/,
   /^fc00:/i,
   /^fe80:/i,
@@ -62,14 +48,11 @@ export function isValidSafeUrl(urlStr: string): boolean {
   if (!urlStr || typeof urlStr !== 'string') return false
   try {
     const parsed = new URL(urlStr.trim())
-    // Chỉ chấp nhận giao thức an toàn HTTPS hoặc HTTP (khuyến khích HTTPS)
     if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
       return false
     }
 
     const hostname = parsed.hostname.toLowerCase()
-
-    // Chặn truy cập địa chỉ IP nội bộ / localhost chống SSRF
     for (const pattern of PRIVATE_IP_PATTERNS) {
       if (pattern.test(hostname)) {
         return false
@@ -82,9 +65,8 @@ export function isValidSafeUrl(urlStr: string): boolean {
   }
 }
 
-// ── 4. PASSWORD STRENGTH VALIDATION ──
 export interface PasswordStrength {
-  score: number // 0 -> 4
+  score: number
   label: 'Rất yếu' | 'Yếu' | 'Trung bình' | 'Mạnh' | 'Rất mạnh'
   color: string
   isAcceptable: boolean
@@ -120,7 +102,6 @@ export function validatePassword(password: string): PasswordStrength {
     score += 1
   }
 
-  // Normalize score to 0..4
   const normalizedScore = Math.min(Math.max(score - 1, 0), 4)
 
   const map: Record<number, { label: PasswordStrength['label']; color: string }> = {
@@ -142,7 +123,6 @@ export function validatePassword(password: string): PasswordStrength {
   }
 }
 
-// ── 5. EDGE IN-MEMORY RATE LIMITER (Chống DoS & Spam API) ──
 interface RateLimitRecord {
   count: number
   resetTime: number
@@ -150,12 +130,6 @@ interface RateLimitRecord {
 
 const rateLimitMap = new Map<string, RateLimitRecord>()
 
-/**
- * Sliding window in-memory rate limiter cho Next.js Edge Runtime
- * @param key Khóa định danh (IP hoặc User ID)
- * @param limit Số lượt tối đa được phép trong cửa sổ thời gian
- * @param windowMs Khoảng thời gian tính bằng mili-giây (ví dụ: 60000ms = 1 phút)
- */
 export function checkRateLimit(
   key: string,
   limit: number = 10,
@@ -164,7 +138,6 @@ export function checkRateLimit(
   const now = Date.now()
   const record = rateLimitMap.get(key)
 
-  // Xóa bớt các bản ghi cũ khi map quá lớn (tránh tràn bộ nhớ)
   if (rateLimitMap.size > 5000) {
     for (const [k, v] of rateLimitMap.entries()) {
       if (v.resetTime < now) {

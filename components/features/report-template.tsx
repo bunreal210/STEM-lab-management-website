@@ -6,13 +6,11 @@ interface ReportTemplateProps {
   exporterName: string
   exportDate: string
   source: string
-  // Data
   devices: Device[]
   loans: Loan[]
   reports: DeviceReport[]
   schedules: Schedule[]
   journals: JournalEntry[]
-  // Sections to show
   showDevices?: boolean
   showLoans?: boolean
   showReports?: boolean

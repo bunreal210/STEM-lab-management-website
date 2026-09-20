@@ -6,14 +6,12 @@ import { useEffect, useState, useCallback } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
-import type { Device, Schedule, Material, Post, Loan, JournalEntry, DeviceReport, UserProfile, Tab } from '@/lib/types'
+import type { Device, Schedule, Material, Loan, JournalEntry, DeviceReport, UserProfile, Tab } from '@/lib/types'
 import { Dialog as UiDialog } from '@/components/ui/dialog'
 
-// Layout components
 import { AppHeader } from '@/components/layout/app-header'
 import { AppFooter } from '@/components/layout/app-footer'
 
-// Feature components
 import { HomeTab } from '@/components/features/home-tab'
 import { DevicesTab } from '@/components/features/devices-tab'
 import { SchedulesTab } from '@/components/features/schedules-tab'
@@ -23,7 +21,6 @@ import { BorrowTab } from '@/components/features/borrow-tab'
 import { ReportsTab } from '@/components/features/reports-tab'
 import { ProfileTab } from '@/components/features/profile-tab'
 
-// Modal components
 import { AuthModal } from '@/components/modals/auth-modal'
 import { ResetPasswordModal } from '@/components/modals/reset-password-modal'
 import { DeviceModal } from '@/components/modals/device-modal'
@@ -65,11 +62,9 @@ export default function App() {
   const pathname = usePathname()
   const router = useRouter()
 
-  // ── Auth state
   const [authUser, setAuthUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
 
-  // ── Data state
   const [devices, setDevices]         = useState<Device[]>([])
   const [schedules, setSchedules]     = useState<Schedule[]>([])
   const [materials, setMaterials]     = useState<Material[]>([])
@@ -77,21 +72,17 @@ export default function App() {
   const [journal, setJournal]         = useState<JournalEntry[]>([])
   const [reports, setReports]         = useState<DeviceReport[]>([])
 
-  // ── Active tab derived from URL path
   const tab: Tab = PATH_TO_TAB[pathname] || 'trang-chu'
 
-  // ── UI state
   const [mobileOpen, setMobileOpen]   = useState(false)
   const [dialog, setDialog]           = useState<{ title: string; msg: string; ok: boolean } | null>(null)
   const [loading, setLoading]         = useState(true)
 
-  // ── Filter state
   const [deviceSearch, setDeviceSearch] = useState('')
   const [deviceCat, setDeviceCat]       = useState('all')
   const [matFilter, setMatFilter]       = useState('all')
   const [journalTab, setJournalTab]     = useState<'hoc-sinh' | 'giao-vien' | 'quan-tri'>('hoc-sinh')
 
-  // ── Modal state
   const [authMode, setAuthMode]         = useState<'login' | 'register' | 'forgot' | 'magic'>('login')
   const [authOpen, setAuthOpen]         = useState(false)
   const [resetPasswordOpen, setResetPasswordOpen] = useState(false)
@@ -103,31 +94,7 @@ export default function App() {
   const [reportModalOpen, setReportModalOpen]       = useState(false)
   const [notificationModalOpen, setNotificationModalOpen] = useState(false)
 
-  // ─── Init ────────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    document.documentElement.classList.remove('dark')
-    localStorage.removeItem('darkMode')
-
-    loadPublicData()
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setAuthUser(session?.user ?? null)
-      if (session?.user) loadUserData(session.user.id)
-    })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setAuthUser(session?.user ?? null)
-      if (session?.user) loadUserData(session.user.id)
-      else { setProfile(null); setLoans([]); setReports([]) }
-
-      if (event === 'PASSWORD_RECOVERY') {
-        setResetPasswordOpen(true)
-      }
-    })
-    return () => subscription.unsubscribe()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const loadPublicData = async () => {
+  const loadPublicData = useCallback(async () => {
     setLoading(true)
     const [devRes, scRes, matRes, jnRes] = await Promise.all([
       supabase.from('devices').select('*').order('created_at'),
@@ -140,9 +107,9 @@ export default function App() {
     if (matRes.data)  setMaterials(matRes.data)
     if (jnRes.data)   setJournal(jnRes.data)
     setLoading(false)
-  }
+  }, [])
 
-  const loadUserData = async (uid: string) => {
+  const loadUserData = useCallback(async (uid: string) => {
     const [profRes, loansRes, repRes] = await Promise.all([
       supabase.from('user_profiles').select('*').eq('id', uid).maybeSingle(),
       supabase.from('loans').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
@@ -177,7 +144,29 @@ export default function App() {
     }
     if (loansRes.data) setLoans(loansRes.data)
     if (repRes.data) setReports(repRes.data)
-  }
+  }, [authUser])
+
+  useEffect(() => {
+    document.documentElement.classList.remove('dark')
+    localStorage.removeItem('darkMode')
+
+    loadPublicData()
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAuthUser(session?.user ?? null)
+      if (session?.user) loadUserData(session.user.id)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setAuthUser(session?.user ?? null)
+      if (session?.user) loadUserData(session.user.id)
+      else { setProfile(null); setLoans([]); setReports([]) }
+
+      if (event === 'PASSWORD_RECOVERY') {
+        setResetPasswordOpen(true)
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [loadPublicData, loadUserData])
 
   const updateProfile = async (name: string, class_name: string, phone: string, dob: string) => {
     if (!authUser) return
@@ -204,7 +193,6 @@ export default function App() {
 
   const isAdmin = profile?.role === 'admin'
 
-  // Trigger admin data when visiting personal/admin tab
   useEffect(() => {
     if ((tab === 'trang-ca-nhan' || tab === 'admin-panel') && (isAdmin || profile?.role === 'teacher')) {
       loadAdminData()
@@ -224,7 +212,6 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  // ─── AUTH ────────────────────────────────────────────────────────────────────
   async function handleLoginSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
@@ -361,7 +348,6 @@ export default function App() {
     showDialog('Đã đăng xuất', 'Tài khoản đã được đăng xuất an toàn.')
   }
 
-  // ─── DEVICES CRUD ────────────────────────────────────────────────────────────
   async function handleDeviceSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
@@ -396,7 +382,6 @@ export default function App() {
     showDialog('Đã xóa', 'Thiết bị đã bị xóa khỏi kho.')
   }
 
-  // ─── SCHEDULES ───────────────────────────────────────────────────────────────
   async function handleScheduleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
@@ -436,7 +421,6 @@ export default function App() {
     showDialog('Đã xóa', 'Lịch hoạt động đã được xóa.')
   }
 
-  // ─── MATERIALS ───────────────────────────────────────────────────────────────
   async function handleMaterialSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
@@ -459,7 +443,6 @@ export default function App() {
     setMaterials(m => m.filter(x => x.id !== id))
   }
 
-  // ─── BORROW / LOANS ──────────────────────────────────────────────────────────
   async function handleBorrowSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!authUser || !profile) { showDialog('Chưa đăng nhập', 'Vui lòng đăng nhập để mượn thiết bị.', false); return }
@@ -599,7 +582,6 @@ export default function App() {
     loadAdminData(); loadPublicData()
   }
 
-  // ─── JOURNAL ──────────────────────────────────────────────────────────────
   async function handleJournalSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
@@ -650,7 +632,6 @@ export default function App() {
     showDialog('Đã xóa', 'Mục nhật ký đã được xóa.')
   }
 
-  // ─── DEVICE REPORTS ──────────────────────────────────────────────────────────
   async function handleReportSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!authUser || !profile) return
@@ -694,7 +675,6 @@ export default function App() {
     loadAdminData()
   }
 
-  // ─── Stats ────────────────────────────────────────────────────────────────────
   const pendingLoans  = loans.filter(l => l.status === 'Chờ duyệt').length
   const activeLoans   = loans.filter(l => l.status === 'Đang mượn').length
   const pendingReports = reports.filter(r => r.status !== 'Đã xử lý').length
@@ -712,14 +692,11 @@ export default function App() {
   return (
     <div className="relative flex flex-col min-h-screen bg-slate-50 text-slate-800 transition-colors duration-300">
       
-      {/* Decorative Blur Ambient Blobs */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-blue-300/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/3 left-0 w-96 h-96 bg-indigo-300/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* ── Dialog ── */}
       {dialog && <UiDialog title={dialog.title} msg={dialog.msg} ok={dialog.ok} onClose={() => setDialog(null)} />}
 
-      {/* ── HEADER ── */}
       <AppHeader
         tab={tab}
         authUser={authUser}
@@ -735,7 +712,6 @@ export default function App() {
         onToggleMobile={() => setMobileOpen(!mobileOpen)}
       />
 
-      {/* ── MAIN CONTENT TAB ROUTER ── */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
         
         {tab === 'trang-chu' && (

@@ -1,4 +1,3 @@
-import type { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type {
   Device,
@@ -219,6 +218,5 @@ export async function sendTelegramMessage(text: string) {
       body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
     })
   } catch {
-    // Best-effort notification
   }
 }

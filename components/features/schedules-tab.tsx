@@ -62,7 +62,6 @@ export type EnrichedSchedule = Schedule & {
   isBookmarked: boolean
 }
 
-// ── SAFE LOCAL DATE FORMATTING ──
 function formatYMD(year: number, monthZeroIndexed: number, day: number): string {
   const m = String(monthZeroIndexed + 1).padStart(2, '0')
   const d = String(day).padStart(2, '0')
@@ -81,7 +80,7 @@ function parseYMD(ymd: string): Date {
 
 function startOfWeek(date: Date): Date {
   const d = new Date(date)
-  const day = (d.getDay() + 6) % 7 // Monday = 0
+  const day = (d.getDay() + 6) % 7
   d.setDate(d.getDate() - day)
   d.setHours(0, 0, 0, 0)
   return d
@@ -119,7 +118,6 @@ function formatVietnameseDate(ymd: string): string {
   return `${dayOfWeek}, ngày ${day}/${month}/${year}`
 }
 
-// ── TOPIC RECOGNITION & COLOR STYLES ──
 function detectTopic(title: string = '', desc: string = ''): TopicInfo {
   const text = (title + ' ' + desc).toLowerCase()
   if (text.includes('robot') || text.includes('vẽ mạch') || text.includes('arduino') || text.includes('iot') || text.includes('cảm biến') || text.includes('tự động')) {
@@ -194,7 +192,6 @@ function detectTopic(title: string = '', desc: string = ''): TopicInfo {
   }
 }
 
-// Detect Shift (Sáng / Chiều / Tối)
 function detectShift(timeRange: string | null): 'morning' | 'afternoon' | 'evening' | 'other' {
   if (!timeRange) return 'other'
   const match = timeRange.match(/(\d{1,2})[:h]/)
@@ -207,7 +204,6 @@ function detectShift(timeRange: string | null): 'morning' | 'afternoon' | 'eveni
   return 'other'
 }
 
-// Check if an event is happening RIGHT NOW
 function isOngoingNow(dateStr: string, timeRange: string | null): boolean {
   const todayStr = getTodayYMD()
   if (dateStr !== todayStr || !timeRange) return false
@@ -274,7 +270,6 @@ function StatusBadge({ status }: { status: 'ongoing' | 'today' | 'upcoming' | 'p
   )
 }
 
-// Generate .ics calendar download file
 function exportToICS(schedules: Schedule[], filename = 'Lich_Hoc_STEM_Lab.ics') {
   const icsContent = [
     'BEGIN:VCALENDAR',
@@ -346,14 +341,12 @@ export function SchedulesTab({
   setScheduleModalOpen,
   deleteSchedule,
 }: SchedulesTabProps) {
-  // ── CORE STATE ──
   const [viewMode, setViewMode] = useState<ViewMode>('week')
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
   const [topicFilter, setTopicFilter] = useState<TopicCategory>('all')
   const [shiftFilter, setShiftFilter] = useState<ShiftCategory>('all')
   const [search, setSearch] = useState('')
 
-  // Selected date for day view and detail popup
   const [currentDate, setCurrentDate] = useState<Date>(() => new Date())
   const [selectedEventModal, setSelectedEventModal] = useState<EnrichedSchedule | null>(null)
   const [bookmarkedIds, setBookmarkedIds] = useState<string[]>([])
@@ -362,19 +355,16 @@ export function SchedulesTab({
 
   const printRef = useRef<HTMLDivElement>(null)
 
-  // Live timer tick every 30s
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 30000)
     return () => clearInterval(timer)
   }, [])
 
-  // Load bookmarks from local storage
   useEffect(() => {
     try {
       const saved = localStorage.getItem('stem_saved_schedules')
       if (saved) setBookmarkedIds(JSON.parse(saved))
     } catch {
-      // ignore
     }
   }, [])
 
@@ -384,7 +374,6 @@ export function SchedulesTab({
       try {
         localStorage.setItem('stem_saved_schedules', JSON.stringify(next))
       } catch {
-        // ignore
       }
       return next
     })
@@ -401,7 +390,6 @@ export function SchedulesTab({
   const todayStr = getTodayYMD()
   const currentSelectedYMD = formatYMD(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate())
 
-  // Enrich schedules with topic, shift & live status
   const enrichedSchedules = useMemo<EnrichedSchedule[]>(() => {
     return schedules.map((sc) => {
       const topic = detectTopic(sc.title, sc.description || '')
@@ -418,7 +406,6 @@ export function SchedulesTab({
     })
   }, [schedules, bookmarkedIds])
 
-  // Map schedules by exact date YYYY-MM-DD
   const schedulesByDate = useMemo(() => {
     const map: Record<string, EnrichedSchedule[]> = {}
     enrichedSchedules.forEach((sc) => {
@@ -428,12 +415,10 @@ export function SchedulesTab({
     return map
   }, [enrichedSchedules])
 
-  // Current ongoing event in lab
   const currentOngoingEvent = useMemo(() => {
     return enrichedSchedules.find((s) => s.status === 'ongoing')
   }, [enrichedSchedules])
 
-  // Next upcoming event for countdown
   const nextUpcomingEvent = useMemo(() => {
     const upcoming = enrichedSchedules
       .filter((s) => s.status === 'upcoming' || (s.status === 'today' && !isOngoingNow(s.date, s.time_range)))
@@ -441,7 +426,6 @@ export function SchedulesTab({
     return upcoming[0] || null
   }, [enrichedSchedules])
 
-  // Stats calculation
   const totalCount = enrichedSchedules.length
   const todayCount = enrichedSchedules.filter((s) => s.date === todayStr).length
 
@@ -454,11 +438,9 @@ export function SchedulesTab({
 
   const weekCount = enrichedSchedules.filter((s) => s.date >= weekStartStr && s.date <= weekEndStr).length
 
-  // Filtered schedules for List View & Search
   const filteredList = useMemo(() => {
     let list = enrichedSchedules
 
-    // Search query
     if (search.trim()) {
       const q = search.toLowerCase()
       list = list.filter(
@@ -470,7 +452,6 @@ export function SchedulesTab({
       )
     }
 
-    // Time filter
     if (timeFilter === 'today') {
       list = list.filter((sc) => sc.date === todayStr)
     } else if (timeFilter === 'this_week') {
@@ -492,21 +473,17 @@ export function SchedulesTab({
       list = list.filter((sc) => sc.isBookmarked)
     }
 
-    // Topic filter
     if (topicFilter !== 'all') {
       list = list.filter((sc) => sc.topic.key === topicFilter)
     }
 
-    // Shift filter
     if (shiftFilter !== 'all') {
       list = list.filter((sc) => sc.shift === shiftFilter)
     }
 
-    // Sort by date ascending
     return list.sort((a, b) => a.date.localeCompare(b.date))
   }, [enrichedSchedules, search, timeFilter, topicFilter, shiftFilter, todayStr])
 
-  // Navigation handlers
   const handlePrevDay = () => {
     const d = new Date(currentDate)
     d.setDate(d.getDate() - 1)
@@ -545,7 +522,6 @@ export function SchedulesTab({
     setCurrentDate(new Date())
   }
 
-  // Monthly Calendar Grid
   const calendarDays = useMemo(() => {
     const year = currentDate.getFullYear()
     const month = currentDate.getMonth()
@@ -553,7 +529,7 @@ export function SchedulesTab({
     const lastDayOfMonth = new Date(year, month + 1, 0)
     const daysInMonth = lastDayOfMonth.getDate()
 
-    const startDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7 // Monday = 0
+    const startDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7
 
     const days: Array<{
       dateStr: string
@@ -564,7 +540,6 @@ export function SchedulesTab({
       events: EnrichedSchedule[]
     }> = []
 
-    // Previous month padding
     const prevMonthLastDay = new Date(year, month, 0).getDate()
     for (let i = startDayOfWeek - 1; i >= 0; i--) {
       const dayNum = prevMonthLastDay - i
@@ -580,7 +555,6 @@ export function SchedulesTab({
       })
     }
 
-    // Current month days
     for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
       const dateStr = formatYMD(year, month, dayNum)
       days.push({
@@ -593,7 +567,6 @@ export function SchedulesTab({
       })
     }
 
-    // Next month padding
     const remaining = (7 - (days.length % 7)) % 7
     for (let dayNum = 1; dayNum <= remaining; dayNum++) {
       const dateStr = month === 11 ? formatYMD(year + 1, 0, dayNum) : formatYMD(year, month + 1, dayNum)
@@ -610,15 +583,11 @@ export function SchedulesTab({
     return days
   }, [currentDate, schedulesByDate, todayStr])
 
-  // Events for the selected day in Day View
   const selectedDayEvents = schedulesByDate[currentSelectedYMD] || []
-
-  // Group events for the selected day by shifts
   const selectedDayMorning = selectedDayEvents.filter((e) => e.shift === 'morning' || e.shift === 'other')
   const selectedDayAfternoon = selectedDayEvents.filter((e) => e.shift === 'afternoon')
   const selectedDayEvening = selectedDayEvents.filter((e) => e.shift === 'evening')
 
-  // Print timetable handler
   const handlePrint = () => {
     window.print()
   }
@@ -1672,7 +1641,6 @@ export function SchedulesTab({
   )
 }
 
-// ── REUSABLE SCHEDULE CARD COMPONENT ──
 interface ScheduleCardProps {
   event: EnrichedSchedule
   isAdmin: boolean

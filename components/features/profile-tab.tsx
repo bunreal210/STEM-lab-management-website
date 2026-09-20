@@ -18,7 +18,6 @@ interface ProfileTabProps {
   devices: Device[]
   onUpdateProfile: (name: string, class_name: string, phone: string, dob: string) => Promise<void>
   onChangeEmail?: (newEmail: string) => Promise<void>
-  // Admin props
   pendingLoans: number
   activeLoans: number
   pendingReports: number
@@ -74,7 +73,6 @@ export function ProfileTab({
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
 
-  // State đổi email
   const [showEmailModal, setShowEmailModal] = useState(false)
   const [newEmail, setNewEmail] = useState('')
   const [emailLoading, setEmailLoading] = useState(false)
@@ -84,7 +82,6 @@ export function ProfileTab({
   const isTeacher = profile?.role === 'teacher'
   const roleName = profile?.role === 'admin' ? 'Quản trị viên' : profile?.role === 'teacher' ? 'Giáo viên' : 'Học sinh'
 
-  // Filter personal data
   const personalLoans = loans.filter(l => l.user_id === authUser?.id)
   const personalReports = reports.filter(r => r.reporter_id === authUser?.id)
   const personalJournals = journal.filter(j => j.author_id === authUser?.id)

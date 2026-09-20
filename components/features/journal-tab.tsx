@@ -56,13 +56,11 @@ export function JournalTab({
   const [dateTo, setDateTo] = useState('')
   const [sortAsc, setSortAsc] = useState(false)
 
-  // Filter by role sub-tab
   const roleFiltered = useMemo(() =>
     journal.filter(e => (e.journal_role || 'quan-tri') === activeJournalTab),
     [journal, activeJournalTab]
   )
 
-  // Apply search + date filters
   const filtered = useMemo(() => {
     let result = roleFiltered
 
@@ -82,12 +80,10 @@ export function JournalTab({
     return result
   }, [roleFiltered, search, dateFrom, dateTo, sortAsc])
 
-  // Stats
   const thisMonth = new Date().toISOString().slice(0, 7)
   const totalThisMonth = roleFiltered.filter(e => e.date.startsWith(thisMonth)).length
   const totalParticipants = roleFiltered.reduce((s, e) => s + (e.participants || 0), 0)
 
-  // Permission check
   const canWrite = (() => {
     if (!authUser || !profile) return false
     if (activeJournalTab === 'hoc-sinh') return true
