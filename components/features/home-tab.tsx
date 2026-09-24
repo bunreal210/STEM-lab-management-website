@@ -1,6 +1,8 @@
 'use client'
 
+import Image from 'next/image'
 import { NotebookPen, TriangleAlert, ArrowLeftRight, Lock, Sparkles, Cpu, CalendarDays, FileText, Users, ArrowRight, Globe, ExternalLink } from 'lucide-react'
+import type { User } from '@supabase/supabase-js'
 import type { Tab } from '@/lib/types'
 
 interface HomeTabProps {
@@ -9,7 +11,7 @@ interface HomeTabProps {
   materialsCount: number
   profilesCount: number
   switchTab: (t: Tab) => void
-  authUser: any
+  authUser: User | null
   setAuthOpen: (val: boolean) => void
   setAuthMode: (val: 'login' | 'register') => void
 }
@@ -28,10 +30,13 @@ export function HomeTab({
     <div className="space-y-8 animate-fade-in">
       {/* Hero Section with Modern Glassmorphic Look */}
       <div className="relative overflow-hidden rounded-3xl shadow-xl min-h-[420px] sm:min-h-[460px] flex items-center justify-center border border-slate-800/40">
-        <img
+        <Image
           src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1600&q=80"
-          alt="STEM Lab"
-          className="absolute inset-0 w-full h-full object-cover scale-105 transition-transform duration-1000 hover:scale-100"
+          alt="STEM Lab THPT Bắc Đông Quan"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover scale-105 transition-transform duration-1000 hover:scale-100"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-900/85 to-blue-950/60" />
 

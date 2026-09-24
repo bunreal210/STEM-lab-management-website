@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+/* Fonts are loaded via next/font in app/layout.tsx for optimal performance */
 
 @tailwind base;
 @tailwind components;
@@ -6,8 +6,8 @@
 
 @layer base {
   :root {
-    --font-heading: 'Outfit', sans-serif;
-    --font-body: 'Inter', sans-serif;
+    --font-heading: var(--font-heading, 'Outfit', sans-serif);
+    --font-body: var(--font-body, 'Inter', sans-serif);
   }
   html {
     font-family: var(--font-body);
@@ -55,6 +55,7 @@ th.uppercase,
 }
 
 @layer utilities {
+  /* line-clamp is built into Tailwind v3 – kept here as explicit fallback */
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -67,6 +68,11 @@ th.uppercase,
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+  /* Hint browser to skip off-screen rendering for tab panels */
+  .content-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
+  }
 }
 
 /* Scrollbar */
@@ -74,11 +80,6 @@ th.uppercase,
 ::-webkit-scrollbar-track { background: #f1f5f9; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-/* Dark mode scrollbar */
-.dark ::-webkit-scrollbar-track { background: #1e293b; }
-.dark ::-webkit-scrollbar-thumb { background: #475569; }
-.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
 
 /* Animations */
 @keyframes fadeIn {
@@ -102,14 +103,14 @@ th.uppercase,
 .animate-slide-down { animation: slideDown 0.25s ease forwards; }
 .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 
-/* Smooth transitions cho tất cả interactive elements */
+/* Smooth transitions for interactive elements */
 button, a, input, select, textarea {
   transition-property: color, background-color, border-color, box-shadow, opacity, transform;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
 
-/* Focus ring đẹp hơn cho accessibility */
+/* Accessible focus ring */
 *:focus-visible {
   outline: 2px solid rgba(2, 132, 199, 0.5);
   outline-offset: 2px;

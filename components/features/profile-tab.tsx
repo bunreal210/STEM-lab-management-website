@@ -145,12 +145,14 @@ export function ProfileTab({
       await onUpdateProfile(editName, editClass, editPhone, editDob)
       setMessage('Cập nhật thông tin thành công!')
       setIsEditing(false)
-    } catch (err: any) {
-      setMessage('Lỗi khi cập nhật thông tin: ' + err.message)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Lỗi không xác định'
+      setMessage('Lỗi khi cập nhật thông tin: ' + msg)
     } finally {
       setLoading(false)
     }
   }
+
 
   return (
     <section className="space-y-6 animate-fade-in max-w-7xl mx-auto px-1 sm:px-4">

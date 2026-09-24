@@ -30,6 +30,10 @@ export type AdminData = {
   profiles: UserProfile[]
 }
 
+/**
+ * Load all public data in parallel. Returns empty arrays on partial failure
+ * so the UI can still render with whatever data is available.
+ */
 export async function loadPublicData(): Promise<PublicData> {
   const [devicesRes, schedulesRes, materialsRes, postsRes, journalRes] = await Promise.all([
     supabase.from('devices').select('*').order('created_at'),
@@ -40,11 +44,11 @@ export async function loadPublicData(): Promise<PublicData> {
   ])
 
   return {
-    devices: devicesRes.data ?? [],
+    devices:   devicesRes.data   ?? [],
     schedules: schedulesRes.data ?? [],
     materials: materialsRes.data ?? [],
-    posts: postsRes.data ?? [],
-    journal: journalRes.data ?? [],
+    posts:     postsRes.data     ?? [],
+    journal:   journalRes.data   ?? [],
   }
 }
 
@@ -57,7 +61,7 @@ export async function loadUserData(uid: string): Promise<UserData> {
 
   return {
     profile: profileRes.data ?? null,
-    loans: loansRes.data ?? [],
+    loans:   loansRes.data   ?? [],
     reports: reportsRes.data ?? [],
   }
 }
@@ -70,11 +74,13 @@ export async function loadAdminData(): Promise<AdminData> {
   ])
 
   return {
-    loans: loansRes.data ?? [],
-    reports: reportsRes.data ?? [],
+    loans:    loansRes.data    ?? [],
+    reports:  reportsRes.data  ?? [],
     profiles: profilesRes.data ?? [],
   }
 }
+
+// ── Auth ───────────────────────────────────────────────────────────────────────
 
 export async function loginUser(email: string, password: string) {
   return supabase.auth.signInWithPassword({ email, password })
@@ -106,6 +112,8 @@ export async function logoutUser() {
   return supabase.auth.signOut()
 }
 
+// ── Devices ────────────────────────────────────────────────────────────────────
+
 export async function upsertDevice(
   payload: Partial<Device> & {
     name: string
@@ -132,6 +140,8 @@ export async function deleteRow(
   return supabase.from(table).delete().eq('id', id)
 }
 
+// ── Schedules ─────────────────────────────────────────────────────────────────
+
 export async function createSchedule(input: {
   title: string
   date: string
@@ -143,6 +153,8 @@ export async function createSchedule(input: {
   return supabase.from('schedules').insert(input)
 }
 
+// ── Materials ─────────────────────────────────────────────────────────────────
+
 export async function createMaterial(input: {
   title: string
   type: string
@@ -153,6 +165,8 @@ export async function createMaterial(input: {
   return supabase.from('materials').insert(input)
 }
 
+// ── Posts ─────────────────────────────────────────────────────────────────────
+
 export async function createPost(input: {
   title: string
   category: string
@@ -162,6 +176,8 @@ export async function createPost(input: {
 }) {
   return supabase.from('posts').insert(input)
 }
+
+// ── Loans ─────────────────────────────────────────────────────────────────────
 
 export async function createLoan(input: {
   user_id: string
@@ -186,6 +202,8 @@ export async function updateDeviceAvailability(id: string, available: number) {
   return supabase.from('devices').update({ available }).eq('id', id)
 }
 
+// ── Reports ───────────────────────────────────────────────────────────────────
+
 export async function createReport(input: {
   device_id: string
   device_name: string
@@ -201,12 +219,21 @@ export async function createReport(input: {
 }
 
 export async function resolveReport(id: string, note: string) {
-  return supabase.from('device_reports').update({ status: 'Đã xử lý', admin_note: note }).eq('id', id)
+  return supabase
+    .from('device_reports')
+    .update({ status: 'Đã xử lý', admin_note: note })
+    .eq('id', id)
 }
 
+// ── Telegram (legacy – prefer sendNotification from notifications service) ────
+
+/**
+ * @deprecated Use sendNotification() from lib/services/notifications instead.
+ *             This function is kept only for backwards-compatibility.
+ */
 export async function sendTelegramMessage(text: string) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('tg_bot_token') : null
-  const chatId = typeof window !== 'undefined' ? localStorage.getItem('tg_chat_id') : null
+  const token   = typeof window !== 'undefined' ? localStorage.getItem('tg_bot_token')  : null
+  const chatId  = typeof window !== 'undefined' ? localStorage.getItem('tg_chat_id')    : null
   const enabled = typeof window !== 'undefined' ? localStorage.getItem('tg_enabled') === 'true' : false
 
   if (!enabled || !token || !chatId) return
@@ -218,5 +245,6 @@ export async function sendTelegramMessage(text: string) {
       body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),
     })
   } catch {
+    // Silently fail – Telegram is optional
   }
 }

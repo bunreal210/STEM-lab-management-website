@@ -1,10 +1,10 @@
-export function downloadCSV(filename: string, rows: any[][]) {
-  const processRow = (row: any[]) => {
+export function downloadCSV(filename: string, rows: (string | number | null | undefined)[][]) {
+  const processRow = (row: (string | number | null | undefined)[]) => {
     return row
       .map((val) => {
         const str = String(val === null || val === undefined ? '' : val)
         const escaped = str.replace(/"/g, '""')
-        if (escaped.search(/("|,|\n)/g) >= 0) {
+        if (/[",\n]/.test(escaped)) {
           return `"${escaped}"`
         }
         return escaped
@@ -14,16 +14,19 @@ export function downloadCSV(filename: string, rows: any[][]) {
 
   const csvContent = rows.map(processRow).join('\n')
   const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
-  const link = document.createElement('a')
   const url = URL.createObjectURL(blob)
-  
+  const link = document.createElement('a')
+
   link.setAttribute('href', url)
   link.setAttribute('download', filename)
   link.style.visibility = 'hidden'
-  
+
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+
+  // Release the object URL to avoid memory leaks
+  setTimeout(() => URL.revokeObjectURL(url), 100)
 }
 
 export function format24hTime(timeStr?: string | null): string {
@@ -40,7 +43,7 @@ export function format24hTime(timeStr?: string | null): string {
 
 export function isDateInRange(itemDateStr?: string | null, startDate?: string, endDate?: string): boolean {
   if (!itemDateStr) return true
-  
+
   let ymd = ''
   if (itemDateStr.includes('T')) {
     const d = new Date(itemDateStr)

@@ -12,7 +12,7 @@ interface AppHeaderProps {
   isAdmin: boolean
   onSwitchTab: (tab: Tab) => void
   onLogout: () => void
-  onOpenAuth: (mode: 'login' | 'register') => void
+  onOpenAuth: (mode: 'login' | 'register' | 'forgot' | 'magic') => void
   onToggleMobile: () => void
 }
 
@@ -81,11 +81,12 @@ export function AppHeader({
           </div>
 
           {/* Desktop Navigation Tabs */}
-          <nav className="hidden lg:flex items-center gap-1 min-w-0">
+          <nav className="hidden lg:flex items-center gap-1 min-w-0" aria-label="Điều hướng chính">
             {MAIN_NAVIGATION_TABS.map(([tabKey, label]) => (
               <button
                 key={tabKey}
                 onClick={() => onSwitchTab(tabKey)}
+                aria-current={tab === tabKey ? 'page' : undefined}
                 className={`px-3 py-1.5 rounded-xl text-xs xl:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
                   tab === tabKey
                     ? 'text-sky-700 bg-sky-50 shadow-xs'
@@ -100,6 +101,7 @@ export function AppHeader({
               <>
                 <button
                   onClick={() => onSwitchTab('muon-tra')}
+                  aria-current={tab === 'muon-tra' ? 'page' : undefined}
                   className={`px-3 py-1.5 rounded-xl text-xs xl:text-sm font-bold border transition-all cursor-pointer whitespace-nowrap ${
                     tab === 'muon-tra'
                       ? 'bg-sky-50 text-sky-700 border-sky-200'
@@ -110,6 +112,7 @@ export function AppHeader({
                 </button>
                 <button
                   onClick={() => onSwitchTab('bao-hong')}
+                  aria-current={tab === 'bao-hong' ? 'page' : undefined}
                   className={`px-3 py-1.5 rounded-xl text-xs xl:text-sm font-bold border flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap ${
                     tab === 'bao-hong'
                       ? 'bg-amber-50 text-amber-700 border-amber-200'

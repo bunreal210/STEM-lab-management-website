@@ -2,7 +2,7 @@
 
 export const runtime = 'edge'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
@@ -94,6 +94,36 @@ export default function App() {
   const [reportModalOpen, setReportModalOpen]       = useState(false)
   const [notificationModalOpen, setNotificationModalOpen] = useState(false)
 
+  // ── Derived / memoized values ──────────────────────────────────────────────
+  const isAdmin = useMemo(() => profile?.role === 'admin', [profile])
+
+  const filteredDevices = useMemo(() => {
+    const search = deviceSearch.toLowerCase()
+    return devices.filter(d => {
+      const matchSearch = d.name.toLowerCase().includes(search) || d.code.toLowerCase().includes(search)
+      const matchCat = deviceCat === 'all' || d.category === deviceCat
+      return matchSearch && matchCat
+    })
+  }, [devices, deviceSearch, deviceCat])
+
+  const filteredMaterials = useMemo(
+    () => (matFilter === 'all' ? materials : materials.filter(m => m.type === matFilter)),
+    [materials, matFilter]
+  )
+
+  const categories = useMemo(
+    () => Array.from(new Set(devices.map(d => d.category).filter(Boolean))) as string[],
+    [devices]
+  )
+
+  const myLoans   = useMemo(() => loans.filter(l => l.user_id === authUser?.id), [loans, authUser])
+  const myReports = useMemo(() => reports.filter(r => r.reporter_id === authUser?.id), [reports, authUser])
+
+  const pendingLoans   = useMemo(() => loans.filter(l => l.status === 'Chờ duyệt').length, [loans])
+  const activeLoans    = useMemo(() => loans.filter(l => l.status === 'Đang mượn').length, [loans])
+  const pendingReports = useMemo(() => reports.filter(r => r.status !== 'Đã xử lý').length, [reports])
+
+  // ── Data loading ───────────────────────────────────────────────────────────
   const loadPublicData = useCallback(async () => {
     setLoading(true)
     const [devRes, scRes, matRes, jnRes] = await Promise.all([
@@ -109,6 +139,11 @@ export default function App() {
     setLoading(false)
   }, [])
 
+  // Use a ref for authUser to avoid re-creating loadUserData on every auth state change,
+  // which would break the useEffect dependency array and cause infinite re-renders.
+  const authUserRef = useRef<User | null>(null)
+  authUserRef.current = authUser
+
   const loadUserData = useCallback(async (uid: string) => {
     const [profRes, loansRes, repRes] = await Promise.all([
       supabase.from('user_profiles').select('*').eq('id', uid).maybeSingle(),
@@ -117,7 +152,7 @@ export default function App() {
     ])
     if (profRes.data) {
       setProfile(profRes.data)
-      const sessionUser = authUser
+      const sessionUser = authUserRef.current
       if (sessionUser && sessionUser.id === uid && (!profRes.data.email || profRes.data.email !== sessionUser.email)) {
         const emailVal = sessionUser.email || ''
         await supabase.from('user_profiles').update({ email: emailVal }).eq('id', uid)
@@ -144,12 +179,9 @@ export default function App() {
     }
     if (loansRes.data) setLoans(loansRes.data)
     if (repRes.data) setReports(repRes.data)
-  }, [authUser])
+  }, []) // No dependency on authUser – uses ref instead
 
   useEffect(() => {
-    document.documentElement.classList.remove('dark')
-    localStorage.removeItem('darkMode')
-
     loadPublicData()
 
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -190,8 +222,6 @@ export default function App() {
     if (loansRes.data) setLoans(loansRes.data)
     if (repRes.data)   setReports(repRes.data)
   }, [])
-
-  const isAdmin = profile?.role === 'admin'
 
   useEffect(() => {
     if ((tab === 'trang-ca-nhan' || tab === 'admin-panel') && (isAdmin || profile?.role === 'teacher')) {
@@ -336,10 +366,12 @@ export default function App() {
       if (error) {
         showDialog('Đăng nhập thất bại', error.message, false)
       }
-    } catch (err: any) {
-      showDialog('Lỗi kết nối', err?.message || 'Không thể kết nối đến nhà cung cấp dịch vụ.', false)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Không thể kết nối đến nhà cung cấp dịch vụ.'
+      showDialog('Lỗi kết nối', msg, false)
     }
   }
+
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -675,19 +707,7 @@ export default function App() {
     loadAdminData()
   }
 
-  const pendingLoans  = loans.filter(l => l.status === 'Chờ duyệt').length
-  const activeLoans   = loans.filter(l => l.status === 'Đang mượn').length
-  const pendingReports = reports.filter(r => r.status !== 'Đã xử lý').length
 
-  const filteredDevices = devices.filter(d => {
-    const matchSearch = d.name.toLowerCase().includes(deviceSearch.toLowerCase()) || d.code.toLowerCase().includes(deviceSearch.toLowerCase())
-    const matchCat = deviceCat === 'all' || d.category === deviceCat
-    return matchSearch && matchCat
-  })
-  const filteredMaterials = matFilter === 'all' ? materials : materials.filter(m => m.type === matFilter)
-  const myLoans   = loans.filter(l => l.user_id === authUser?.id)
-  const myReports = reports.filter(r => r.reporter_id === authUser?.id)
-  const categories = Array.from(new Set(devices.map(d => d.category).filter(Boolean))) as string[]
 
   return (
     <div className="relative flex flex-col min-h-screen bg-slate-50 text-slate-800 transition-colors duration-300">
