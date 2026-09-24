@@ -1,4 +1,4 @@
-export interface Schedule {
+export type Schedule = {
   id: string
   title: string
   date: string
@@ -9,7 +9,7 @@ export interface Schedule {
   created_at: string
 }
 
-export interface Material {
+export type Material = {
   id: string
   title: string
   type: string
@@ -19,7 +19,7 @@ export interface Material {
   created_at: string
 }
 
-export interface Post {
+export type Post = {
   id: string
   title: string
   category: string | null
@@ -29,7 +29,7 @@ export interface Post {
   published_at: string
 }
 
-export interface JournalEntry {
+export type JournalEntry = {
   id: string
   date: string
   time_of_day: string | null

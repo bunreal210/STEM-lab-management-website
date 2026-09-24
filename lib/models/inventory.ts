@@ -1,4 +1,4 @@
-export interface Device {
+export type Device = {
   id: string
   name: string
   category: string
@@ -11,7 +11,7 @@ export interface Device {
   created_at: string
 }
 
-export interface Loan {
+export type Loan = {
   id: string
   user_id: string | null
   user_name: string
@@ -26,7 +26,7 @@ export interface Loan {
   created_at: string
 }
 
-export interface DeviceReport {
+export type DeviceReport = {
   id: string
   device_id: string | null
   device_name: string
