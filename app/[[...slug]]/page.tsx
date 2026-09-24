@@ -156,7 +156,7 @@ export default function App() {
       const sessionUser = authUserRef.current
       if (sessionUser && sessionUser.id === uid && (!profData.email || profData.email !== sessionUser.email)) {
         const emailVal = sessionUser.email || ''
-        await supabase.from('user_profiles').update({ email: emailVal }).eq('id', uid)
+        await (supabase.from('user_profiles') as any).update({ email: emailVal }).eq('id', uid)
         setProfile({ ...profData, email: emailVal })
       }
     } else {
