@@ -174,7 +174,7 @@ export default function App() {
           email: user.email || '',
           created_at: new Date().toISOString(),
         }
-        await supabase.from('user_profiles').upsert(newProf)
+        await (supabase.from('user_profiles') as any).upsert(newProf)
         setProfile(newProf)
       }
     }
@@ -207,8 +207,8 @@ export default function App() {
     const cleanClass = sanitizeInput(class_name).toUpperCase()
     const cleanPhone = sanitizeInput(phone)
     const cleanDob = sanitizeInput(dob)
-    const { error } = await supabase
-      .from('user_profiles')
+    const { error } = await (supabase
+      .from('user_profiles') as any)
       .update({ name: cleanName, class_name: cleanClass, phone: cleanPhone, dob: cleanDob || null })
       .eq('id', authUser.id)
     if (error) throw error
