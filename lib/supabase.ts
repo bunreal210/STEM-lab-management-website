@@ -10,7 +10,7 @@ declare global {
   var __supabaseClient: ReturnType<typeof createClient> | undefined
 }
 
-export const supabase =
+const client =
   globalThis.__supabaseClient ??
   (globalThis.__supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
@@ -19,3 +19,9 @@ export const supabase =
       detectSessionInUrl: true,
     },
   }))
+
+// Export with modified 'from' signature to prevent 'never' inference
+// on table operations, while preserving 'auth' and other methods' types.
+export const supabase = client as Omit<typeof client, 'from'> & {
+  from: (table: string) => any
+}
