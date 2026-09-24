@@ -132,10 +132,10 @@ export default function App() {
       supabase.from('materials').select('*').order('created_at'),
       supabase.from('journal_entries').select('*').order('date', { ascending: false }),
     ])
-    if (devRes.data)  setDevices(devRes.data)
-    if (scRes.data)   setSchedules(scRes.data)
-    if (matRes.data)  setMaterials(matRes.data)
-    if (jnRes.data)   setJournal(jnRes.data)
+    if (devRes.data)  setDevices(devRes.data as Device[])
+    if (scRes.data)   setSchedules(scRes.data as Schedule[])
+    if (matRes.data)  setMaterials(matRes.data as Material[])
+    if (jnRes.data)   setJournal(jnRes.data as JournalEntry[])
     setLoading(false)
   }, [])
 
@@ -150,13 +150,14 @@ export default function App() {
       supabase.from('loans').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
       supabase.from('device_reports').select('*').eq('reporter_id', uid).order('created_at', { ascending: false }),
     ])
-    if (profRes.data) {
-      setProfile(profRes.data)
+    const profData = profRes.data as UserProfile | null
+    if (profData) {
+      setProfile(profData)
       const sessionUser = authUserRef.current
-      if (sessionUser && sessionUser.id === uid && (!profRes.data.email || profRes.data.email !== sessionUser.email)) {
+      if (sessionUser && sessionUser.id === uid && (!profData.email || profData.email !== sessionUser.email)) {
         const emailVal = sessionUser.email || ''
         await supabase.from('user_profiles').update({ email: emailVal }).eq('id', uid)
-        setProfile({ ...profRes.data, email: emailVal })
+        setProfile({ ...profData, email: emailVal })
       }
     } else {
       const { data: { user } } = await supabase.auth.getUser()
@@ -177,8 +178,8 @@ export default function App() {
         setProfile(newProf)
       }
     }
-    if (loansRes.data) setLoans(loansRes.data)
-    if (repRes.data) setReports(repRes.data)
+    if (loansRes.data) setLoans(loansRes.data as Loan[])
+    if (repRes.data) setReports(repRes.data as DeviceReport[])
   }, []) // No dependency on authUser – uses ref instead
 
   useEffect(() => {
@@ -219,8 +220,8 @@ export default function App() {
       supabase.from('loans').select('*').order('created_at', { ascending: false }),
       supabase.from('device_reports').select('*').order('created_at', { ascending: false }),
     ])
-    if (loansRes.data) setLoans(loansRes.data)
-    if (repRes.data)   setReports(repRes.data)
+    if (loansRes.data) setLoans(loansRes.data as Loan[])
+    if (repRes.data)   setReports(repRes.data as DeviceReport[])
   }, [])
 
   useEffect(() => {
